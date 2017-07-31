@@ -31,7 +31,7 @@ const ProfileDialog = ({user}) => {
       <TextField
         hintText="暂无"
         floatingLabelText="当前部门及ID"
-        value={user.dep_id ? `部门：${user.dep_name} / ID：${user.dep_id}` : ''}
+        value={user.dept_id ? `部门：${user.dept_name} / ID：${user.dept_id}` : ''}
         floatingLabelFixed={true}
         readOnly
         style={{marginRight: 20}}

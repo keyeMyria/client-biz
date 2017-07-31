@@ -10,6 +10,7 @@ import MerchantMembers from '../stores/merchantMember';
 class UserDetail extends React.PureComponent {
   render() {
     const {user} = this.props;
+    const depName = user.dep_id ? user.dep_name : '暂无部门';
     return (
       <form>
         <TextField
@@ -28,7 +29,7 @@ class UserDetail extends React.PureComponent {
         />
         <TextField
           floatingLabelText="部门"
-          value={`${user.dep_name || '暂无部门'} (id: ${user.dep_id || ''})`}
+          value={`${depName || '暂无部门名称'} (id: ${user.dep_id || ''})`}
           type="text"
           readOnly={true}
           style={{marginRight: 20}}
@@ -47,13 +48,20 @@ class UserDetail extends React.PureComponent {
 export default UserDetail;
 
 export class SetDepartment extends React.PureComponent {
-  state = {id: null, submitting: false};
+  constructor(props) {
+    super(props);
+    this.state = {
+      id: props.user.dep_id || '',
+      name: props.user.user_name || '',
+      submitting: false,
+    };
+  }
   submit = async () => {
     if (this.submitting || !this.state.id) return;
     const {user} = this.props;
     this.submitting = true;
     try {
-      const resp = await BaseSvc.updateUser(user.user_name, this.state.id);
+      const resp = await BaseSvc.updateUser(user.user_id, user.user_name, this.state.id);
       if (resp.code === '0') {
         const newUser = {...user, dep_id: this.state.id};
         MerchantMembers.updateUser(newUser);
@@ -72,12 +80,14 @@ export class SetDepartment extends React.PureComponent {
         <TextField
           floatingLabelText="用户名"
           value={this.props.user.user_name}
-          type="text" readOnly
+          type="text"
+          readOnly
+          onChange={e => this.setState({name: e.target.value})}
           style={{marginRight: 20}}
         />
         <TextField
           floatingLabelText="需要配置的部门id"
-          value={this.state.id || ''}
+          value={this.state.id}
           type="number"
           onChange={e => this.setState({id: e.target.value})}
           style={{marginRight: 20}}
