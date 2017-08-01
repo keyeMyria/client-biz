@@ -45,6 +45,7 @@ export default class ProcurementBox extends React.PureComponent {
 
   onSelect = e => this.setState({messagesFilterValue: parseInt(e.target.value, 10)});
   render() {
+    if (!(this.props.user.user && this.props.user.user.current)) return null;
     return (
       <div className="board-layout message-box">
         <BoxHeader title="采购动态" selections={this.selections} onSelect={this.onSelect}
@@ -52,7 +53,7 @@ export default class ProcurementBox extends React.PureComponent {
         <div className="message-list">
           {this.messagesDS.map((messages, index) => <MessageItem message={messages} isProcurement key={index}/>)}
           {!this.messagesDS.length && <p className="none-data">
-            {this.props.user.user && this.props.user.user.current.is_admin ? '管理员无法获得业务动态' : '暂无内容'}
+            {this.props.user.user.current.is_admin ? '管理员无法获得业务动态' : '暂无内容'}
           </p>}
           <div style={{width: '100%', textAlign: 'right'}}>
             {this.store.hasMore && <FlatButton label="加载更多" primary onTouchTap={this.store.load}/>}
