@@ -1,4 +1,4 @@
-import axios from './';
+import axios from './index';
 
 const saveDraft = async (mail_title, mail_content, receiver, priority) => {
   const resp = await axios.post('/mail_gateway/save_drift', {mail_title, mail_content, receiver, priority});

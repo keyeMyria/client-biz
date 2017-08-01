@@ -1,4 +1,4 @@
-import axios from './';
+import axios from './index';
 
 const updateUser = async (id, name, dep_id) => {
   const resp = await axios.post('/base_gateway/update_user', {id, name, dep_id});

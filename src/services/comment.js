@@ -1,4 +1,4 @@
-import axios from './';
+import axios from './index';
 
 const create = async (bill_no, content, parent_id) => {
   const resp = await axios.post('/cmt_gateway/add_comment', {bill_no, content, parent_id});

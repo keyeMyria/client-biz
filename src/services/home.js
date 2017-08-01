@@ -1,4 +1,4 @@
-import axios from './';
+import axios from './index';
 
 const getPurchaseList = async (page_no, page_size) => {
   const resp = await axios.post('/home_gateway/batch_query_purchase_biz', {page_no, page_size});

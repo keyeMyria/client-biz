@@ -1,4 +1,4 @@
-import axios, {clientSeq} from './';
+import axios, {clientSeq} from './index';
 
 const create = async (bill_no, bill_type, relative_mer_id, currency, pay_type, tax_flag, tax_rate, valid_begin_time,
                       valid_end_time, notice_list, content, priority, item_list) => {

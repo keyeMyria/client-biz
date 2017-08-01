@@ -1,4 +1,4 @@
-import axios from './';
+import axios from './index';
 
 const createMerchant = async (mer_name, type, indust_id, org_code, representative, establish_date, om_bank_name,
                               bank_account, swift_code, la_bank_account, tel_list, address) => {

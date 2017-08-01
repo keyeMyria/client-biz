@@ -1,4 +1,4 @@
-import axios from './';
+import axios from './index';
 
 const create = async (bill_no, settle_type, invoice_type, relative_mer_id, currency, pay_type, tax_type, total_amount,
                       invoiced_amount, pay_amount, settle_list) => {

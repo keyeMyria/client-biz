@@ -1,4 +1,4 @@
-import axios from './';
+import axios from './index';
 
 const invite = async (partner_id) => {
   const resp = await axios.post('/biz_gateway/send_invite_req', {partner_id});

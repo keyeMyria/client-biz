@@ -1,4 +1,4 @@
-import axios from './';
+import axios from './index';
 
 const login = async (uname, pwd) => {
   const resp = await axios.post(`/user_gateway/auth`, { uname, pwd });
