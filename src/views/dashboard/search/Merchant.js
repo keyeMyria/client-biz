@@ -327,7 +327,7 @@ const MerchantList = ({listData, headerTxt, loading, switchMerchant, currentUser
                     <MenuItem onTouchTap={() => BizDialog.onOpen('确认退出',
                       <ComfirmDialog submitAction={quitMerchant.bind(null, item)}/>)}>退出该商户</MenuItem>
                   </IconMenu>}
-                primaryText={item.username || `商户名称: ${item.mer_name}`}
+                primaryText={item.username || `商户: ${item.mer_name}`}
                 secondaryText={
                   <p>
                     <span style={{color: darkBlack}}>id: {item.mer_id}</span><br />

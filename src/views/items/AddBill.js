@@ -175,6 +175,7 @@ export default class AddBill extends React.PureComponent {
   render() {
     const followArray = [...this.store.notice_list];
     const tableRowStyle = {padding: 0};
+    const followMemberSelection = MemberStore.memberList.filter(member => member.user_id !== this.currentUser.id);
     return (
       <form onSubmit={this.store.submit}>
         <TextField
@@ -345,11 +346,11 @@ export default class AddBill extends React.PureComponent {
           open={this.store.openMemberListDialog}
           onRequestClose={this.store.closeMemberDialog}>
           <div>
-            {MemberStore.memberList.filter(member => member.user_id !== this.currentUser.id).map((member, key) => (
+            {followMemberSelection.length ? followMemberSelection.map((member, key) => (
               <Checkbox label={member.user_name} key={key}
                         checked={followArray.findIndex(follow => follow.user_id === member.user_id) > -1}
                         onCheck={(event, checked) => this.store.updateFollow(member, checked)}/>
-            ))}
+            )): <p>暂无可添加成员</p>}
           </div>
         </Dialog>
         <Dialog
