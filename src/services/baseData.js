@@ -1,7 +1,7 @@
 import axios from './';
 
-const updateUser = async (user_id, name, dep_id) => {
-  const resp = await axios.post('/base_gateway/update_user', {user_id, name, dep_id});
+const updateUser = async (id, name, dep_id) => {
+  const resp = await axios.post('/base_gateway/update_user', {id, name, dep_id});
   return resp.data;
 };
 

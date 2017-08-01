@@ -191,7 +191,7 @@ const DataList = ({listData, landed, loadMore, hasMore, onDelete}) => {
     <List style={{width: 400, marginRight: 10}}>
       <div style={{backgroundColor: '#FFF'}}>
         <Subheader>邮件草稿</Subheader>
-        {!landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
+        {!landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
         {!(listData && listData.length) && landed && <p className="none-data"
                                                           style={{textAlign: 'center', paddingBottom: 20, color: '#CCC'}}>尚未保存过草稿</p>}
         {(listData && listData.length > 0) && <Divider inset={true} />}

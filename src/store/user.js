@@ -25,18 +25,18 @@ export default class UserStore {
       }
     });
   };
-  @action update(user) {
+  @action update = user => {
+    this.user.current = {...user};
     Storage.updateUser(user);
-    this.user.current = user;
-  }
-  @action logout() {
+  };
+  @action logout = () => {
     this.user.current = null;
     Storage.resetToken();
-  }
-  @action login(token, user, account) {
+  };
+  @action login = (token, user, account) => {
     this.user.current = user;
     Storage.setUser(token, user, account);
-  }
+  };
   @action quiteMerchant = async () => {
     if (this.quiting) return;
     this.quiting = true;

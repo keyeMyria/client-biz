@@ -10,7 +10,7 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import IconMenu from 'material-ui/IconMenu';
 import MenuItem from 'material-ui/MenuItem';
 import MerchantSvc from '../../../services/merchant';
-import ContentDrafts from 'material-ui/svg-icons/content/drafts';
+import MailIcon from 'material-ui/svg-icons/content/mail';
 import CircularProgress from 'material-ui/CircularProgress';
 import {ToastStore as Toast} from "../../../components/Toast";
 
@@ -30,7 +30,6 @@ class applyMessageStore {
       runInAction('after load', () => {
         if (resp.code === '0' && resp.data) this.messages = [...resp.data];
       });
-      console.log(resp);
     } catch (e) {
       console.log(e, 'load invite message');
     }
@@ -82,7 +81,6 @@ class inviteMessageStore {
     this.loading = true;
     try {
       const resp = await MerchantSvc.getMerchantListByInvite(id);
-      console.log(resp, 'invite list');
       runInAction('after load', () => {
         if (resp.code === '0' && resp.data) this.messages = [...resp.data];
       });
@@ -172,7 +170,7 @@ const MessageList = ({listData, loading, serviceAction, actionType, type}) => {
           listData && listData.map((item, index) => (
             <div key={index}>
               <ListItem
-                leftIcon={<ContentDrafts />}
+                leftIcon={<MailIcon />}
                 rightIconButton={(
                   <IconMenu iconButtonElement={iconButtonElement}>
                     <MenuItem onTouchTap={() => serviceAction(item.id, actionType.ACCEPT)}>同意</MenuItem>

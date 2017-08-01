@@ -38,6 +38,7 @@
   font-size: 16px;
   color: #797979;
   margin-right: 10px;
+  user-select: text;
 }
 
 .message-info-item {
@@ -190,7 +191,7 @@
   align-items: center;
   justify-content: flex-start;
   border-bottom: 1px solid #E6E6E6;
-  padding-left: 20px;
+  padding-left: 10px;
 }
 
 .comment-tab {
@@ -258,6 +259,7 @@
   justify-content: flex-start;
   font-size: 14px;
   color: #999;
+  user-select: text;
 }
 
 .comment-company {
@@ -269,6 +271,7 @@
 .comment-content {
   font-size: 14px;
   color: #4A4A4A;
+  user-select: text;
 }
 
 .comment-item.activities {
@@ -340,4 +343,19 @@
 
 .goods-table th, .goods-table td {
   padding: 0 !important;
+}
+
+.bill-content {
+  font-size: 14px;
+  line-height: 1.5em;
+  color: #999;
+  margin-top: 20px;
+  width: 100%;
+  overflow: hidden;
+  word-wrap: break-word;
+
+  span {
+    color: #189acf;
+    user-select: text;
+  }
 }

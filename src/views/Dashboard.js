@@ -34,7 +34,10 @@ export default class Dashboard extends React.Component {
     const {routes, user} = this.props;
     return (
       <div className="dashboard">
-        <DashboardNav currentUser={user.user.current} logout={this.reLogin} quitMerchant={this.props.user.quiteMerchant}/>
+        <DashboardNav currentUser={user.user.current}
+                      logout={this.reLogin}
+                      update={user.update}
+                      quitMerchant={this.props.user.quiteMerchant}/>
         {routes && routes.map((route, i) => (
           <RouteWithSubRoutes key={i} {...route}/>
         ))}
@@ -86,7 +89,8 @@ class DashboardNav extends React.Component {
   };
 
   // 打开个人资料dialog
-  handleOpenProfileDialog = () => BizDialog.onOpen('个人资料', <ProfileDialog user={this.props.currentUser}/>);
+  handleOpenProfileDialog = () => BizDialog.onOpen('个人资料', <ProfileDialog user={this.props.currentUser}
+                                                                          update={this.props.update}/>);
 
   handleQuickCreate = event => {
     event.preventDefault();

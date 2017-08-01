@@ -333,6 +333,7 @@ export default class FinancialDetail extends React.PureComponent {
                   ))}
                 </TableBody>
               </Table>
+              <br/><br/>
             </div>
             <Dialog
               title='编辑结算明细行'

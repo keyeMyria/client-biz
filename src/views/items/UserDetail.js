@@ -81,8 +81,7 @@ export class SetDepartment extends React.PureComponent {
           floatingLabelText="用户名"
           value={this.props.user.user_name}
           type="text"
-          readOnly
-          onChange={e => this.setState({name: e.target.value})}
+          disabled
           style={{marginRight: 20}}
         />
         <TextField

@@ -296,6 +296,7 @@ export class DetailHeader extends React.PureComponent {
     const {detail} = this.props;
     const {isProcurement, head} = detail;
     const currentUser = this.props.user.user.current;
+    const MemberList = MemberStore.memberList.filter(member => member.user_id !== currentUser.id);
     return (
       <div className="order-info-item">
         <div className="order-source">
@@ -305,7 +306,7 @@ export class DetailHeader extends React.PureComponent {
           {/*<this.ActionButton icon='note_add' tooltip='添加备注' action={this.onAddNote}/>*/}
         </div>
         <div className="member-relatives">
-          <p>关注人：</p>
+          <p style={{color: '#999'}}>关注人：</p>
           <div>
             <p>
               {this.store.notice_list.map((item, index) => (
@@ -324,15 +325,16 @@ export class DetailHeader extends React.PureComponent {
               open={this.state.openMemberListDialog}
               onRequestClose={() => this.setState({openMemberListDialog: false})}>
               <div>
-                {MemberStore.memberList.filter(member => member.user_id !== currentUser.id).map((member, key) => (
+                {MemberList.length ? MemberList.map((member, key) => (
                   <Checkbox label={member.user_name} key={key}
                             checked={this.store.notice_list.findIndex(follow => follow.id === member.user_id) > -1}
                             onCheck={(event, checked) => this.store.updateFollow(member, checked)}/>
-                ))}
+                )) : <p>暂无可添加成员</p>}
               </div>
             </Dialog>
           </div>
         </div>
+        {head.content && <p className='bill-content'>单据内容：<span>{head.content}</span></p>}
         <div className="select-actions" style={{marginBottom: 10}}>
           <div style={{flex: 1}}>
             <SelectField floatingLabelText="币种: " value={this.store.currency} disabled
