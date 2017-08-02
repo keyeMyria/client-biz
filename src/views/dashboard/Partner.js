@@ -28,6 +28,7 @@ const ListType = {
 class Invitations {
   @observable rawDS = [];
   @observable loading = false;
+  @observable landed = false;
 
   @computed get DS() {
     return this.rawDS.filter(item => !item.accept_status);
@@ -48,6 +49,7 @@ class Invitations {
       Toast.show('抱歉，发生未知错误，请检查网络连接稍后重试');
     }
     this.loading = false;
+    if (!this.landed) this.landed = true;
   };
 
   @action accept = async (item) => {
@@ -95,27 +97,7 @@ const InvitationStore = new Invitations();
 
 @inject('user')
 @observer
-export default class Partner extends React.PureComponent {
-  state={};
-  partners = partnerStore;
-  invitations = InvitationStore;
-  componentWillMount() {
-    const {current} = this.props.user.user;
-    const isAdmin = current && (current.is_admin === 1);
-    this.partners.load();
-    if (isAdmin) this.invitations.load();
-  }
-  TabBar = () => {
-    return (
-      <div className="panel-nav">
-        <a className="title" style={{boxSizing: 'border-box', paddingRight: 10}}>
-          <FontIcon className="material-icons" color="#333">dashboard</FontIcon>
-          <span>合作伙伴</span>
-        </a>
-      </div>
-    );
-  };
-
+export default class Partner extends React.Component {
   render() {
     const {current} = this.props.user.user;
     const isAdmin = current && (current.is_admin === 1);
@@ -123,20 +105,20 @@ export default class Partner extends React.PureComponent {
       <div style={{flex: 1}}>
         <this.TabBar />
         <div className="main-board">
-          <DataList type={ListType.PARTNERS}
-                    listData={this.partners.DS}
-                    loading={this.partners.loading}
-                    hasMore={this.partners.hasMore}
-                    loadMore={this.partners.load}
-                    landed={this.partners.landed}
-                    currentUser={current}/>
-          {isAdmin && <DataList type={ListType.INVITE}
-                                listData={this.invitations.DS}
-                                loading={this.invitations.loading}/>}
+          <DataList type={ListType.PARTNERS} store={partnerStore}/>
+          {isAdmin && <DataList type={ListType.INVITE} store={InvitationStore}/>}
         </div>
       </div>
     );
   }
+  TabBar = () => (
+    <div className="panel-nav">
+      <a className="title" style={{boxSizing: 'border-box', paddingRight: 10}}>
+        <FontIcon className="material-icons" color="#333">dashboard</FontIcon>
+        <span>合作伙伴</span>
+      </a>
+    </div>
+  );
 }
 
 const iconButtonElement = (
@@ -166,82 +148,95 @@ const getPartnerFlag = flag => {
   }
 };
 
-const DataList = ({listData, loading, type, currentUser, hasMore, loadMore, landed}) => {
-  const isAdmin = currentUser && (currentUser.is_admin === 1);
-  let headerTxt = '';
-  let messageA = '';
-  let primaryTxtTip = '';
-  let noDataTxt = '';
-  let leftIcon = null;
-  let menuItem = [];
-  switch (type) {
-    default: return;
-    case ListType.PARTNERS:
-      headerTxt = '合作伙伴';
-      noDataTxt = '暂无合作伙伴';
-      primaryTxtTip = '商户名（内部）';
-      leftIcon = <PartnerIcon />;
-      menuItem = isAdmin ? [
-        {name: '查看/修改资料', action: partner => BizDialog.onOpen('合作伙伴详情', <AddPartner partner={partner}/>)},
-        {name: '解除合作关系', action: partner => BizDialog.onOpen('确认解除？', <ComfirmDialog submitAction={partnerStore.delete.bind(null, partner)}/>)}
-      ] : [
-        {name: '查看资料', action: partner => BizDialog.onOpen('合作伙伴详情', <AddPartner partner={partner}/>)},
-      ];
-      break;
-    case ListType.INVITE:
-      headerTxt = '伙伴申请';
-      noDataTxt = '暂无申请';
-      messageA = '申请成为合作伙伴';
-      primaryTxtTip = '商户(ID)';
-      leftIcon = <MailIcon />;
-      menuItem = [
-        {name: '同意', action: InvitationStore.accept},
-        {name: '拒绝', action: InvitationStore.refuse}
-      ];
-      break;
+@inject('user')
+@observer
+class DataList extends React.Component {
+  store = this.props.store;
+  componentWillMount() {
+    this.store.load();
   }
-  const isInvite = type === ListType.INVITE;
-  const handleAddPartner = () => BizDialog.onOpen('添加合作伙伴', <AddPartner/>);
-  return (
-    <List style={{width: 400, marginRight: 10}}>
-      <div style={{backgroundColor: '#FFF'}}>
-        <Subheader >{headerTxt}</Subheader>
-        {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
-        {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center', paddingBottom: 20}}>{noDataTxt}</p>}
-        {(listData && listData.length > 0) && <Divider inset={true} />}
-      </div>
-      <div style={{overflowY: 'auto', height: '90%'}}>
-        {
-          listData && listData.map((item, index) => (
-            <div key={index} style={{backgroundColor: '#FFF'}}>
-              <ListItem
-                leftIcon={leftIcon}
-                rightIconButton={(
-                  <IconMenu iconButtonElement={iconButtonElement}>
-                    {menuItem.map((menu, key) => <MenuItem onTouchTap={menu.action.bind(null, item)} key={key}>{menu.name}</MenuItem>)}
-                  </IconMenu>
-                )}
-                primaryText={`${primaryTxtTip}: ${isInvite ? item.src_mer_id : item.inner_partner_name}`}
-                secondaryText={
-                  <p>
-                    <span>{isInvite ? messageA : `伙伴标识：${getPartnerFlag(item.partner_flag)}`}</span><br />
-                    {isInvite ? item.create_time : `伙伴类型：${getPartnerType(item.partner_type)}`}
-                  </p>
-                }
-                secondaryTextLines={2}
-              />
-              {((listData.length - 1) !== index) && <Divider inset={true} />}
+
+  handleAddPartner = () => BizDialog.onOpen('添加合作伙伴', <AddPartner/>);
+
+  render() {
+    const {DS, loading, hasMore, landed, load} = this.store;
+    const {type} = this.props;
+    const currentUser = this.props.user.user.current;
+    const isAdmin = currentUser && (currentUser.is_admin === 1);
+    let headerTxt = '';
+    let messageA = '';
+    let primaryTxtTip = '';
+    let noDataTxt = '';
+    let leftIcon = null;
+    let menuItem = [];
+    switch (type) {
+      default: return;
+      case ListType.PARTNERS:
+        headerTxt = '合作伙伴';
+        noDataTxt = '暂无合作伙伴';
+        primaryTxtTip = '商户名（内部）';
+        leftIcon = <PartnerIcon />;
+        menuItem = isAdmin ? [
+          {name: '查看/修改资料', action: partner => BizDialog.onOpen('合作伙伴详情', <AddPartner partner={partner}/>)},
+          {name: '解除合作关系', action: partner => BizDialog.onOpen('确认解除？', <ComfirmDialog submitAction={partnerStore.delete.bind(null, partner)}/>)}
+        ] : [
+          {name: '查看资料', action: partner => BizDialog.onOpen('合作伙伴详情', <AddPartner partner={partner}/>)},
+        ];
+        break;
+      case ListType.INVITE:
+        headerTxt = '伙伴申请';
+        noDataTxt = '暂无申请';
+        messageA = '申请成为合作伙伴';
+        primaryTxtTip = '商户(ID)';
+        leftIcon = <MailIcon />;
+        menuItem = [
+          {name: '同意', action: InvitationStore.accept},
+          {name: '拒绝', action: InvitationStore.refuse}
+        ];
+        break;
+    }
+    const isInvite = type === ListType.INVITE;
+    return (
+      <List style={{width: 400, marginRight: 10}}>
+        <div style={{backgroundColor: '#FFF'}}>
+          <Subheader >{headerTxt}</Subheader>
+          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
+          {!DS.length && !loading && <p className="none-data" style={{textAlign: 'center', paddingBottom: 20}}>{noDataTxt}</p>}
+          {(DS.length > 0) && <Divider inset={true} />}
+        </div>
+        <div style={{overflowY: 'auto', height: '90%'}}>
+          {
+            DS.map((item, index) => (
+              <div key={index} style={{backgroundColor: '#FFF'}}>
+                <ListItem
+                  leftIcon={leftIcon}
+                  rightIconButton={(
+                    <IconMenu iconButtonElement={iconButtonElement}>
+                      {menuItem.map((menu, key) => <MenuItem onTouchTap={menu.action.bind(null, item)} key={key}>{menu.name}</MenuItem>)}
+                    </IconMenu>
+                  )}
+                  primaryText={`${primaryTxtTip}: ${isInvite ? item.src_mer_id : item.inner_partner_name}`}
+                  secondaryText={
+                    <p>
+                      <span>{isInvite ? messageA : `伙伴标识：${getPartnerFlag(item.partner_flag)}`}</span><br />
+                      {isInvite ? item.create_time : `伙伴类型：${getPartnerType(item.partner_type)}`}
+                    </p>
+                  }
+                  secondaryTextLines={2}
+                />
+                {((DS.length - 1) !== index) && <Divider inset={true} />}
+              </div>
+            ))
+          }
+          {!isInvite && (
+            <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+              {(isAdmin || hasMore) && <Divider inset={true} />}
+              {isAdmin && <FlatButton label="添加合作伙伴" primary={true} onTouchTap={this.handleAddPartner}/>}
+              {hasMore && <FlatButton label="加载更多" primary={true} onTouchTap={load}/>}
             </div>
-          ))
-        }
-        {!isInvite && (
-          <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-            {(isAdmin || hasMore) && <Divider inset={true} />}
-            {isAdmin && <FlatButton label="添加合作伙伴" primary={true} onTouchTap={handleAddPartner}/>}
-            {hasMore && <FlatButton label="加载更多" primary={true} onTouchTap={loadMore}/>}
-          </div>
-        )}
-      </div>
-    </List>
-  );
-};
+          )}
+        </div>
+      </List>
+    );
+  }
+}

@@ -36,7 +36,7 @@ class MailStore {
   constructor(mail = {}) {
     this.title = mail.mail_title || '';
     this.content = mail.mail_content || '';
-    this.receiverId = (mail.receiver_id && parseInt(mail.receiver_id, 10)) || '';
+    this.receiverId = (mail.receiver && parseInt(mail.receiver, 10)) || '';
     this.priority = (mail.priority && mail.priority.split(',')) || [];
     this.id = mail.id;
   }

@@ -25,9 +25,33 @@ import MemberStore from "../../stores/merchantMember";
 import UserDetail, {SetDepartment} from '../../items/UserDetail';
 import Storage from '../../../utils/storage';
 
+export default class MerchantInfo extends React.PureComponent {
+  render() {
+    return (
+      <div className="search-content">
+        <MerchantList />
+        <MemberList />
+        <DepartmentList />
+      </div>
+    );
+  }
+}
+
+const iconButtonElement = (
+  <IconButton
+    touch={true}
+    tooltip="操作"
+    tooltipPosition="bottom-left"
+  >
+    <MoreVertIcon color={grey400} />
+  </IconButton>
+);
+
 class MerchantListStore {
   @observable merchantList = [];
   @observable loading = false;
+  @observable landed = false;
+
   @action load = async () => {
     if (this.loading) return;
     this.loading = true;
@@ -42,7 +66,9 @@ class MerchantListStore {
       Toast.show('抱歉，发生未知错误，请刷新页面稍后重试');
     }
     this.loading = false;
+    if (!this.landed) this.landed = true;
   };
+
   @action quitMerchant = async (merchant) => {
     if (this.quiting) return;
     this.quiting = true;
@@ -65,6 +91,140 @@ class MerchantListStore {
     }
     this.quiting = false;
   };
+}
+
+const merchantListStore = new MerchantListStore();
+
+@inject('user')
+@observer
+class MerchantList extends React.Component {
+  store = merchantListStore;
+  componentWillMount() {
+    this.store.load();
+  }
+
+  openApplyDialog = () => BizDialog.onOpen('加入商户', <DialogForm type='apply' hintTxt="请输入商户的ID" submitTxt="申请"/>);
+
+  switchMerchant = async (id) => {
+    if (this.submitting) return;
+    this.submitting = true;
+    try {
+      const require_userinfo = 1;
+      const resp = await MerchantSvc.switchMerchant(id, require_userinfo);
+      if (resp.code === '0') {
+        this.props.user.update(resp.data);
+        Toast.show('切换商户成功')
+      } else Toast.show(resp.msg || '切换商户失败，请稍后重试');
+    } catch (e) {
+      console.log(e, 'switch merchant');
+      Toast.show('切换商户失败，请稍后重试')
+    }
+    this.submitting = false;
+  };
+
+  render() {
+    const {merchantList, loading, landed, quitMerchant} = this.store;
+    const currentUser = this.props.user.user.current;
+    return (
+      <List className='search-list'>
+        <div style={{backgroundColor: '#FFF'}}>
+          <Subheader >{`已加入商户列表(当前id: ${currentUser.mer_id})`}</Subheader>
+          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
+          {!(merchantList && merchantList.length) && !loading && (
+            <p className="none-data" style={{textAlign: 'center'}}>暂未加入其他商户</p>
+          )}
+          {(merchantList && merchantList.length > 0) && <Divider inset={true} />}
+        </div>
+        <div className='list-container'>
+          {merchantList.map((item, index) => (
+              <div key={index} style={{backgroundColor: '#FFF'}}>
+                <ListItem
+                  leftIcon={<MerchantIcon />}
+                  rightIconButton={(
+                    <IconMenu iconButtonElement={iconButtonElement}>
+                      {(currentUser && !currentUser.is_admin) && (
+                        <MenuItem onTouchTap={this.switchMerchant.bind(null, item.mer_id)}>切换至该商户</MenuItem>
+                      )}
+                      <MenuItem onTouchTap={() => BizDialog.onOpen('确认退出',
+                        <ComfirmDialog submitAction={quitMerchant.bind(null, item)}/>)}>退出该商户</MenuItem>
+                    </IconMenu>
+                  )}
+                  primaryText={item.username || `商户: ${item.mer_name}`}
+                  secondaryText={
+                    <p>
+                      <span style={{color: darkBlack}}>id: {item.mer_id}</span><br />
+                      {item.create_time} 加入
+                    </p>
+                  }
+                  secondaryTextLines={2}
+                />
+                {((merchantList.length - 1) !== index) && <Divider inset={true} />}
+              </div>
+            ))
+          }
+          <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+            <Divider inset={true} />
+            <FlatButton label="加入商户" primary={true} onTouchTap={this.openApplyDialog}/>
+          </div>
+        </div>
+      </List>
+    );
+  }
+}
+
+@inject('user')
+@observer
+class MemberList extends React.Component {
+  store = MemberStore;
+  componentWillMount() {
+    this.store.load();
+  }
+
+  openInviteDialog = () => BizDialog.onOpen('邀请用户', <DialogForm type='invite' hintTxt="请输入用户的账号" submitTxt="邀请"/>);
+
+  render() {
+    const {memberList, loading, deleteUser, landed} = this.store;
+    const currentUser = this.props.user.user.current;
+    const isAdmin = currentUser && (currentUser.is_admin === 1);
+    return (
+      <List className='search-list'>
+        <div style={{backgroundColor: '#FFF'}}>
+          <Subheader>当前商会成员</Subheader>
+          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
+          {!memberList.length && !loading && <p className="none-data" style={{textAlign: 'center'}}>商户暂无成员</p>}
+          {(memberList.length > 0) && <Divider inset={true} />}
+        </div>
+        <div className='list-container'>
+          {memberList.map((item, index) => (
+              <div key={index} style={{backgroundColor: '#FFF'}}>
+                <ListItem
+                  leftIcon={<MemberIcon />}
+                  rightIconButton={(
+                    <IconMenu iconButtonElement={iconButtonElement}>
+                      <MenuItem onTouchTap={() => BizDialog.onOpen('用户资料', <UserDetail user={item}/>)}>查看</MenuItem>
+                      {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('设置部门',
+                        <SetDepartment user={item}/>)}>设置部门</MenuItem>}
+                      {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('移出商户',
+                        <ComfirmDialog submitAction={deleteUser.bind(null, item)}/>)}>移出商户</MenuItem>}
+                    </IconMenu>
+                  )}
+                  primaryText={item.username || `用户名: ${item.user_name}`}
+                  secondaryText={<p style={{maxWidth: 185}}>账号: {item.account}</p>}
+                  secondaryTextLines={2}
+                />
+                {((memberList.length - 1) !== index) && <Divider inset={true} />}
+              </div>
+            ))
+          }
+          {isAdmin && (
+            <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+              <Divider inset={true} />
+              <FlatButton label="邀请用户" primary={true} onTouchTap={this.openInviteDialog}/>
+            </div>)}
+        </div>
+      </List>
+    );
+  }
 }
 
 class DepartmentStore {
@@ -147,7 +307,6 @@ class DepartmentStore {
     this.deleting = false;
   };
   @action openEditDepDialog = item => {
-    console.log(item);
     if (!item) return;
     this.name = item.name || '';
     this.id = item.id || '';
@@ -207,172 +366,40 @@ const MerchantDepartment = new DepartmentStore();
 
 @inject('user')
 @observer
-export default class MerchantInfo extends React.Component {
-  memberStore = MemberStore;
-  merchantListStore = new MerchantListStore();
-  departmentStore = MerchantDepartment;
+class DepartmentList extends React.Component {
+  store = MerchantDepartment;
+
   componentWillMount() {
-    this.memberStore.load();
-    this.merchantListStore.load();
-    this.departmentStore.load();
+    this.store.load();
   }
-  switchMerchant = async (id) => {
-    if (this.submitting) return;
-    this.submitting = true;
-    try {
-      const require_userinfo = 1;
-      const resp = await MerchantSvc.switchMerchant(id, require_userinfo);
-      if (resp.code === '0') {
-        this.props.user.update(resp.data);
-        Toast.show('切换商户成功')
-      } else Toast.show(resp.msg || '切换商户失败，请稍后重试');
-    } catch (e) {
-      console.log(e, 'switch merchant');
-      Toast.show('切换商户失败，请稍后重试')
-    }
-    this.submitting = false;
-  };
+
   render() {
+    const {departmentList, loading, landed} = this.store;
+    const currentUser = this.props.user.user.current;
+    const isAdmin = currentUser && (currentUser.is_admin === 1);
     return (
-      <div className="search-content">
-        <MerchantList headerTxt={`已加入商户列表(当前id: ${this.props.user.user.current.mer_id})`}
-                      listData={this.merchantListStore.merchantList} loading={this.merchantListStore.loading}
-                      quitMerchant={this.merchantListStore.quitMerchant}
-                      switchMerchant={this.switchMerchant} currentUser={this.props.user.user.current}/>
-        <MemberList headerTxt="当前商户成员" listData={this.memberStore.memberList} loading={this.memberStore.loading}
-                    currentUser={this.props.user.user.current} deleteUser={this.memberStore.delete}/>
-        <DepartmentList headerTxt="部门" listData={this.departmentStore.departmentList} loading={!this.departmentStore.landed}
-                        currentUser={this.props.user.user.current}/>
-      </div>
+      <List className='search-list'>
+        <div style={{backgroundColor: '#FFF'}}>
+          <Subheader>部门</Subheader>
+          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
+          {!departmentList.length && !loading && <p className="none-data" style={{textAlign: 'center'}}>商户暂无部门</p>}
+          {(departmentList.length > 0) && <Divider inset={true} />}
+        </div>
+        <div className='list-container'>
+          {departmentList.map((item, index) => (
+              <DepartmentItem key={index} item={item} isAdmin={isAdmin} noDivider={(departmentList.length - 1) !== index}/>
+          ))}
+          {isAdmin && (
+            <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+              <Divider inset={true} />
+              <FlatButton label="添加部门" primary={true} onTouchTap={() => BizDialog.onOpen('创建部门', <AddDepartment/>)}/>
+            </div>
+          )}
+        </div>
+      </List>
     );
   }
 }
-
-const iconButtonElement = (
-  <IconButton
-    touch={true}
-    tooltip="操作"
-    tooltipPosition="bottom-left" // top-center
-  >
-    <MoreVertIcon color={grey400} />
-  </IconButton>
-);
-
-
-const MemberList = ({listData, headerTxt, loading, currentUser, deleteUser}) => {
-  const isAdmin = currentUser && (currentUser.is_admin === 1);
-  const openInviteDialog = () => BizDialog.onOpen('邀请用户', <DialogForm type='invite' hintTxt="请输入用户的账号" submitTxt="邀请"/>);
-  return (
-    <List className='search-list'>
-      <div style={{backgroundColor: '#FFF'}}>
-        <Subheader >{headerTxt}</Subheader>
-        {loading && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
-        {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center'}}>商户暂无成员</p>}
-        {(listData && listData.length > 0) && <Divider inset={true} />}
-      </div>
-      <div className='list-container'>
-        {
-          listData && listData.map((item, index) => (
-            <div key={index} style={{backgroundColor: '#FFF'}}>
-              <ListItem
-                leftIcon={<MemberIcon />}
-                rightIconButton={(
-                  <IconMenu iconButtonElement={iconButtonElement}>
-                    <MenuItem onTouchTap={() => BizDialog.onOpen('用户资料', <UserDetail user={item}/>)}>查看</MenuItem>
-                    {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('设置部门',
-                      <SetDepartment user={item}/>)}>设置部门</MenuItem>}
-                    {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('移出商户',
-                      <ComfirmDialog submitAction={deleteUser.bind(null, item)}/>)}>移出商户</MenuItem>}
-                  </IconMenu>
-                )}
-                primaryText={item.username || `用户名: ${item.user_name}`}
-                secondaryText={<p style={{maxWidth: 185}}>账号: {item.account}</p>}
-                secondaryTextLines={2}
-              />
-              {(listData.length && ((listData.length - 1) !== index)) && <Divider inset={true} />}
-            </div>
-          ))
-        }
-        {isAdmin && (
-          <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-            <Divider inset={true} />
-            <FlatButton label="邀请用户" primary={true} onTouchTap={openInviteDialog}/>
-          </div>)}
-      </div>
-    </List>
-  );
-};
-
-const MerchantList = ({listData, headerTxt, loading, switchMerchant, currentUser, quitMerchant}) => {
-  const openApplyDialog = () => BizDialog.onOpen('加入商户', <DialogForm type='apply' hintTxt="请输入商户的ID" submitTxt="申请"/>);
-  return (
-    <List className='search-list'>
-      <div style={{backgroundColor: '#FFF'}}>
-        <Subheader >{headerTxt}</Subheader>
-        {loading && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
-        {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center'}}>暂未加入其他商户</p>}
-        {(listData && listData.length > 0) && <Divider inset={true} />}
-      </div>
-      <div className='list-container'>
-        {
-          listData && listData.map((item, index) => (
-            <div key={index} style={{backgroundColor: '#FFF'}}>
-              <ListItem
-                leftIcon={<MerchantIcon />}
-                rightIconButton={<IconMenu iconButtonElement={iconButtonElement}>
-                  {(currentUser && !currentUser.is_admin) && <MenuItem onTouchTap={switchMerchant.bind(null, item.mer_id)}>切换至该商户</MenuItem>}
-                    <MenuItem onTouchTap={() => BizDialog.onOpen('确认退出',
-                      <ComfirmDialog submitAction={quitMerchant.bind(null, item)}/>)}>退出该商户</MenuItem>
-                  </IconMenu>}
-                primaryText={item.username || `商户: ${item.mer_name}`}
-                secondaryText={
-                  <p>
-                    <span style={{color: darkBlack}}>id: {item.mer_id}</span><br />
-                    {item.create_time} 加入
-                  </p>
-                }
-                secondaryTextLines={2}
-              />
-              {(listData.length && ((listData.length - 1) !== index)) && <Divider inset={true} />}
-            </div>
-          ))
-        }
-        <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-          <Divider inset={true} />
-          <FlatButton label="加入商户" primary={true} onTouchTap={openApplyDialog}/>
-        </div>
-      </div>
-    </List>
-  );
-};
-
-
-const DepartmentList = ({listData, headerTxt, loading, currentUser}) => {
-  const isAdmin = currentUser && (currentUser.is_admin === 1);
-  return (
-    <List className='search-list'>
-      <div style={{backgroundColor: '#FFF'}}>
-        <Subheader >{headerTxt}</Subheader>
-        {loading && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
-        {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center'}}>商户暂无部门</p>}
-        {(listData && listData.length > 0) && <Divider inset={true} />}
-      </div>
-      <div className='list-container'>
-        {
-          listData && listData.map((item, index) => (
-            <DepartmentItem key={index} item={item} isAdmin={isAdmin} noDivider={listData.length && ((listData.length - 1) !== index)}/>
-          ))
-        }
-        {isAdmin && (
-          <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-            <Divider inset={true} />
-            <FlatButton label="添加部门" primary={true} onTouchTap={() => BizDialog.onOpen('创建部门', <AddDepartment/>)}/>
-          </div>
-        )}
-      </div>
-    </List>
-  );
-};
 
 @observer
 class DepartmentItem extends React.Component {

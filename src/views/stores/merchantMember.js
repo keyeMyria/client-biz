@@ -5,6 +5,7 @@ import {ToastStore as Toast} from "../../components/Toast";
 class MerchantMemberStore {
   @observable members = [];
   @observable loading = false;
+  @observable landed = false;
 
   @computed get memberList() {
     return this.members.filter(m => m.status === 0);
@@ -23,6 +24,7 @@ class MerchantMemberStore {
       Toast.show('抱歉，发生未知错误，请刷新页面稍后重试')
     }
     this.loading = false;
+    if (!this.landed) this.landed = true;
   };
   @action delete = async (user) => {
     if (!user) return;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, inject } from 'mobx-react';
+import { observer } from 'mobx-react';
 import {observable, computed, action, runInAction} from 'mobx';
 import {List, ListItem} from 'material-ui/List';
 import Divider from 'material-ui/Divider';
@@ -21,6 +21,27 @@ import MailSvc from '../../../services/mail';
 import AddMail from '../../items/AddMail';
 import {BizDialog} from "../../../components/Dialog";
 import {DrawerStore} from "../../../components/Drawer";
+
+export default class Mail extends React.PureComponent {
+  render() {
+    return (
+      <div className="main-board">
+        <DataList />
+        <Search />
+      </div>
+    );
+  }
+}
+
+const iconButtonElement = (
+  <IconButton
+    touch={true}
+    tooltip="操作"
+    tooltipPosition="bottom-left"
+  >
+    <MoreVertIcon color={grey400} />
+  </IconButton>
+);
 
 class MailDraftStore {
   @observable DS = [];
@@ -79,15 +100,64 @@ class MailDraftStore {
 
   @action handleSendByDraft = id => this.DS = this.DS.filter(data => data.id !== id);
   @action updateDraft = item => {
-    console.log(item);
-    this.DS.forEach((data, index, key) => {
-      console.log(data, index, key);
-      if (data.id === item.id) data = {...data, ...item}
-    })
+    this.DS.forEach((data, index) => {
+      if (data.id === item.id) {
+        this.DS[index] = {...data, ...item}
+      }
+    });
+    this.DS = [...this.DS];
   }
 }
 
 export const DraftStore = new MailDraftStore();
+
+@observer
+class DataList extends React.Component {
+  store = DraftStore;
+  componentWillMount() {
+    this.store.load();
+  }
+  render() {
+    const {DS, landed, load, hasMore, onDelete} = this.store;
+    return (
+      <List style={{width: 400, marginRight: 10, height: '96%'}}>
+        <div style={{backgroundColor: '#FFF'}}>
+          <Subheader>邮件草稿</Subheader>
+          {!landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
+          {!DS.length && landed && <p className="none-data"
+                                                          style={{textAlign: 'center', paddingBottom: 20, color: '#CCC'}}>尚未保存过草稿</p>}
+          {(DS.length > 0) && <Divider inset={true} />}
+        </div>
+        <div style={{overflowY: 'auto', height: '90%'}}>
+          {
+            DS.map((item, index) => (
+              <div key={index} style={{backgroundColor: '#FFF'}}>
+                <ListItem
+                  leftIcon={<ContentDrafts />}
+                  rightIconButton={(
+                    <IconMenu iconButtonElement={iconButtonElement}>
+                      <MenuItem onTouchTap={() => BizDialog.onOpen('邮件草稿', <AddMail mail={item}/>)}>查看</MenuItem>
+                      <MenuItem onTouchTap={() => onDelete(item)}>删除</MenuItem>
+                    </IconMenu>
+                  )}
+                  primaryText={`标题: ${item.mail_title}`}
+                  secondaryText={<p>{item.mail_content}</p>}
+                  secondaryTextLines={2}
+                />
+                {((DS.length - 1) !== index) && <Divider inset={true} />}
+              </div>
+            ))
+          }
+          <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+            <Divider inset={true} />
+            {hasMore && <FlatButton label="加载更多" primary={true} onTouchTap={load}/>}
+            <FlatButton label="发送邮件" primary onTouchTap={() => BizDialog.onOpen('发送邮件', <AddMail />)}/>
+          </div>
+        </div>
+      </List>
+    );
+  }
+}
 
 class SearchStore {
   @observable DS = [];
@@ -121,102 +191,38 @@ class SearchStore {
   }
 }
 
-@inject('user')
 @observer
-export default class Mail extends React.PureComponent {
-  store = DraftStore;
+class Search extends React.Component {
   searchStore = new SearchStore();
-  componentWillMount() {
-    this.store.load();
-  }
-  loadMore = () => {
-    if (!this.store.hasMore) return;
-    this.store.load();
-  };
   render() {
     return (
-      <div className="main-board">
-        <DataList listData={this.store.DS} landed={this.store.landed} loadMore={this.loadMore}
-                  onDelete={this.store.onDelete}
-                  hasMore={this.store.hasMore}/>
-        <div className="search-mail-container">
-          <h3>查找邮件</h3>
-          <SelectField
-            floatingLabelText="查找类型"
-            value={this.searchStore.searchType}
-            style={{marginRight: 20}}
-            onChange={(event, index, val) => this.searchStore.setKey('searchType', val)}
-          >
-            <MenuItem value={0} primaryText="邮件标题" />
-            <MenuItem value={1} primaryText="邮件正文" />
-            <MenuItem value={2} primaryText="发件人" />
-          </SelectField><br/>
-          <TextField
-            floatingLabelText="请输入查找关键字"
-            value={this.searchStore.searchKeyWord}
-            type="text"
-            onChange={e => this.searchStore.setKey('searchKeyWord', e.target.value)}
-            style={{marginRight: 20}}
-          />
-          <RaisedButton label="查找" primary={this.searchStore.searchValidated} icon={<SearchIcon />}
-                        disabled={!this.searchStore.searchValidated} onTouchTap={this.searchStore.search}/>
-          <br/>
-          <SearchList listData={this.searchStore.DS} searched={this.searchStore.searched}/>
-        </div>
+      <div className="search-mail-container">
+        <h3>查找邮件</h3>
+        <SelectField
+          floatingLabelText="查找类型"
+          value={this.searchStore.searchType}
+          style={{marginRight: 20}}
+          onChange={(event, index, val) => this.searchStore.setKey('searchType', val)}
+        >
+          <MenuItem value={0} primaryText="邮件标题" />
+          <MenuItem value={1} primaryText="邮件正文" />
+          <MenuItem value={2} primaryText="发件人" />
+        </SelectField><br/>
+        <TextField
+          floatingLabelText="请输入查找关键字"
+          value={this.searchStore.searchKeyWord}
+          type="text"
+          onChange={e => this.searchStore.setKey('searchKeyWord', e.target.value)}
+          style={{marginRight: 20}}
+        />
+        <RaisedButton label="查找" primary={this.searchStore.searchValidated} icon={<SearchIcon />}
+                      disabled={!this.searchStore.searchValidated} onTouchTap={this.searchStore.search}/>
+        <br/>
+        <SearchList listData={this.searchStore.DS} searched={this.searchStore.searched}/>
       </div>
     );
   }
 }
-
-const iconButtonElement = (
-  <IconButton
-    touch={true}
-    tooltip="操作"
-    tooltipPosition="bottom-left"
-  >
-    <MoreVertIcon color={grey400} />
-  </IconButton>
-);
-
-const DataList = ({listData, landed, loadMore, hasMore, onDelete}) => {
-  return (
-    <List style={{width: 400, marginRight: 10, height: '96%'}}>
-      <div style={{backgroundColor: '#FFF'}}>
-        <Subheader>邮件草稿</Subheader>
-        {!landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
-        {!(listData && listData.length) && landed && <p className="none-data"
-                                                          style={{textAlign: 'center', paddingBottom: 20, color: '#CCC'}}>尚未保存过草稿</p>}
-        {(listData && listData.length > 0) && <Divider inset={true} />}
-      </div>
-      <div style={{overflowY: 'auto', height: '90%'}}>
-        {
-          listData && listData.map((item, index) => (
-            <div key={index} style={{backgroundColor: '#FFF'}}>
-              <ListItem
-                leftIcon={<ContentDrafts />}
-                rightIconButton={(
-                  <IconMenu iconButtonElement={iconButtonElement}>
-                    <MenuItem onTouchTap={() => BizDialog.onOpen('邮件草稿', <AddMail mail={item}/>)}>查看</MenuItem>
-                    <MenuItem onTouchTap={() => onDelete(item)}>删除</MenuItem>
-                  </IconMenu>
-                )}
-                primaryText={`标题: ${item.mail_title}`}
-                secondaryText={<p>{item.mail_content}</p>}
-                secondaryTextLines={2}
-              />
-              {(listData.length && ((listData.length - 1) !== index)) && <Divider inset={true} />}
-            </div>
-          ))
-        }
-        <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-          <Divider inset={true} />
-          {hasMore && <FlatButton label="加载更多" primary={true} onTouchTap={loadMore}/>}
-          <FlatButton label="发送邮件" primary onTouchTap={() => BizDialog.onOpen('发送邮件', <AddMail />)}/>
-        </div>
-      </div>
-    </List>
-  );
-};
 
 const SearchList = ({listData, searched}) => {
   return searched ? (

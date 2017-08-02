@@ -1,6 +1,6 @@
 import React from 'react';
 import { observable, computed, action, runInAction} from 'mobx';
-import { observer, inject} from 'mobx-react';
+import { observer} from 'mobx-react';
 import FlatButton from 'material-ui/FlatButton';
 import {List, ListItem} from 'material-ui/List';
 import Divider from 'material-ui/Divider';
@@ -18,6 +18,28 @@ import SearchIcon from 'material-ui/svg-icons/action/search';
 import FinancialSvc from '../../../services/financialBill';
 import {ToastStore as Toast} from "../../../components/Toast";
 import FinancialDetail, {FinancialDrawer} from "./Detail";
+
+export default class FinancialBoard extends React.PureComponent {
+  render() {
+    return (
+      <div className="bill-board financial-board">
+        <DataList />
+        <Search />
+        <FinancialDetail />
+      </div>
+    );
+  }
+}
+
+const iconButtonElement = (
+  <IconButton
+    touch={true}
+    tooltip="操作"
+    tooltipPosition="bottom-left"
+  >
+    <MoreVertIcon color={grey400} />
+  </IconButton>
+);
 
 class FinBillStore {
   @observable DS = [];
@@ -101,7 +123,7 @@ class FinBillStore {
       const resp = await FinancialSvc.getBill(this.searchedBillNo);
       runInAction('after search', () => {
         if (resp.code === '0') {
-          Toast.show('搜索成功');
+          Toast.show('搜索完成');
           this.searchResult = resp.data.head;
         } else Toast.show(resp.msg || '抱歉，搜索失败，请刷新页面后重新尝试');
       });
@@ -115,118 +137,102 @@ class FinBillStore {
 
 export const FinStore = new FinBillStore();
 
-@inject('user')
 @observer
-export default class FinancialBoard extends React.PureComponent {
+class DataList extends React.Component {
   store = FinStore;
-  async componentWillMount() {
+  componentWillMount() {
     this.store.load();
   }
-  loadMore = () => {
-    if (!this.store.hasMore) return;
-    this.store.load();
-  };
-
   render() {
+    const {DS, landed, load, hasMore, abort} = this.store;
     return (
-      <div className="bill-board financial-board">
-        <DataList listData={this.store.DS} landed={this.store.landed} loadMore={this.loadMore}
-                  abort={this.store.abort} hasMore={this.store.hasMore}/>
-        <div className="board-search">
-          <h3>查找结算单</h3>
-          <TextField
-            floatingLabelText="请输入查找的单据号"
-            value={this.store.searchedBillNo}
-            type="number"
-            onChange={e => this.store.setSearchNo(e.target.value)}
-            style={{marginRight: 20}}
-          />
-          <RaisedButton label="查找" primary={this.store.searchValidated} icon={<SearchIcon />}
-                        disabled={!this.store.searchValidated} onTouchTap={this.store.search}/>
-          <br/>
-          {this.store.searching && <CircularProgress size={28} style={{display: 'block', margin: '20px auto'}}/>}
-          {this.store.searchResult && (
-            <ListItem
-              leftIcon={<BillIcon />}
-              style={{backgroundColor: '#FFF', marginTop: 10, width: 400}}
-              rightIconButton={(
-                <IconMenu iconButtonElement={iconButtonElement}>
-                  <MenuItem onTouchTap={FinancialDrawer.onOpen.bind(null, this.store.searchResult)}>查看详情</MenuItem>
-                  {/*<MenuItem onTouchTap={() => DrawerStore.onOpen({...this.store.searchResult, isProcurement: this.store.searchResult.settle_type === 0})}>查看源单据</MenuItem>*/}
-                  <MenuItem onTouchTap={this.store.abort.bind(null, this.store.searchResult)}>作废</MenuItem>
-                </IconMenu>
-              )}
-              primaryText={`单据号: ${this.store.searchResult.bill_no}`}
-              secondaryText={<p>
+      <List style={{width: 400, marginRight: 10}}>
+        <div style={{backgroundColor: '#FFF'}}>
+          <Subheader>财务结算单</Subheader>
+          {!landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', padding: '20px 0'}}/>}
+          {!DS.length && landed && (
+            <p className="none-data" style={{textAlign: 'center', paddingBottom: 20, color: '#CCC'}}>尚未生成结算单</p>
+          )}
+          {(DS.length > 0) && <Divider inset={true} />}
+        </div>
+        <div className='list-container'>
+          {
+            DS.map((item, index) => (
+              <div key={index} style={{backgroundColor: '#FFF'}}>
+                <ListItem
+                  leftIcon={<BillIcon />}
+                  rightIconButton={(
+                    <IconMenu iconButtonElement={iconButtonElement}>
+                      <MenuItem onTouchTap={FinancialDrawer.onOpen.bind(null, item)}>查看详情</MenuItem>
+                      {/*<MenuItem onTouchTap={() => DrawerStore.onOpen({...item, isProcurement: item.settle_type === 0})}>查看源单据</MenuItem>*/}
+                      <MenuItem onTouchTap={abort.bind(null, item)}>作废</MenuItem>
+                    </IconMenu>
+                  )}
+                  primaryText={`单据号: ${item.bill_no}`}
+                  secondaryText={<p>
                   <span style={{color: darkBlack}}>
-                    合作商户：{this.store.searchResult.mer_name}
+                    合作商户：{item.mer_name}
                   </span><br />
-                创建时间: {this.store.searchResult.create_time}
-              </p>}
-              secondaryTextLines={2}
-            />
+                    创建时间: {item.create_time}
+                  </p>}
+                  secondaryTextLines={2}
+                />
+                {((DS.length - 1) !== index) && <Divider inset={true} />}
+              </div>
+            ))
+          }
+          {hasMore && (
+            <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+              <Divider inset={true} />
+              <FlatButton label="加载更多" primary={true} onTouchTap={load}/>
+            </div>
           )}
         </div>
-        <FinancialDetail />
-      </div>
+      </List>
     );
   }
 }
 
-
-const iconButtonElement = (
-  <IconButton
-    touch={true}
-    tooltip="操作"
-    tooltipPosition="bottom-left"
-  >
-    <MoreVertIcon color={grey400} />
-  </IconButton>
-);
-
-const DataList = ({listData, landed, loadMore, hasMore, abort}) => {
-  return (
-    <List style={{width: 400, marginRight: 10}}>
-      <div style={{backgroundColor: '#FFF'}}>
-        <Subheader>财务结算单</Subheader>
-        {!landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', padding: '20px 0'}}/>}
-        {!(listData && listData.length) && landed && <p className="none-data"
-                                                        style={{textAlign: 'center', paddingBottom: 20, color: '#CCC'}}>尚未生成结算单</p>}
-        {(listData && listData.length > 0) && <Divider inset={true} />}
-      </div>
-      <div className='list-container'>
-        {
-          listData && listData.map((item, index) => (
-            <div key={index} style={{backgroundColor: '#FFF'}}>
-              <ListItem
-                leftIcon={<BillIcon />}
-                rightIconButton={(
-                  <IconMenu iconButtonElement={iconButtonElement}>
-                    <MenuItem onTouchTap={FinancialDrawer.onOpen.bind(null, item)}>查看详情</MenuItem>
-                    {/*<MenuItem onTouchTap={() => DrawerStore.onOpen({...item, isProcurement: item.settle_type === 0})}>查看源单据</MenuItem>*/}
-                    <MenuItem onTouchTap={abort.bind(null, item)}>作废</MenuItem>
-                  </IconMenu>
-                )}
-                primaryText={`单据号: ${item.bill_no}`}
-                secondaryText={<p>
+@observer
+class Search extends React.Component {
+  store = FinStore;
+  render() {
+    return(
+      <div className="board-search">
+        <h3>查找结算单</h3>
+        <TextField
+          floatingLabelText="请输入查找的单据号"
+          value={this.store.searchedBillNo}
+          type="number"
+          onChange={e => this.store.setSearchNo(e.target.value)}
+          style={{marginRight: 20}}
+        />
+        <RaisedButton label="查找" primary={this.store.searchValidated} icon={<SearchIcon />}
+                      disabled={!this.store.searchValidated} onTouchTap={this.store.search}/>
+        <br/>
+        {this.store.searching && <CircularProgress size={28} style={{display: 'block', margin: '20px auto'}}/>}
+        {this.store.searchResult && (
+          <ListItem
+            leftIcon={<BillIcon />}
+            style={{backgroundColor: '#FFF', marginTop: 10, width: 400}}
+            rightIconButton={(
+              <IconMenu iconButtonElement={iconButtonElement}>
+                <MenuItem onTouchTap={FinancialDrawer.onOpen.bind(null, this.store.searchResult)}>查看详情</MenuItem>
+                {/*<MenuItem onTouchTap={() => DrawerStore.onOpen({...this.store.searchResult, isProcurement: this.store.searchResult.settle_type === 0})}>查看源单据</MenuItem>*/}
+                <MenuItem onTouchTap={this.store.abort.bind(null, this.store.searchResult)}>作废</MenuItem>
+              </IconMenu>
+            )}
+            primaryText={`单据号: ${this.store.searchResult.bill_no}`}
+            secondaryText={<p>
                   <span style={{color: darkBlack}}>
-                    合作商户：{item.mer_name}
+                    合作商户：{this.store.searchResult.mer_name}
                   </span><br />
-                  创建时间: {item.create_time}
-                </p>}
-                secondaryTextLines={2}
-              />
-              {(listData.length && ((listData.length - 1) !== index)) && <Divider inset={true} />}
-            </div>
-          ))
-        }
-        {hasMore && (
-          <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-            <Divider inset={true} />
-            <FlatButton label="加载更多" primary={true} onTouchTap={loadMore}/>
-          </div>
+              创建时间: {this.store.searchResult.create_time}
+            </p>}
+            secondaryTextLines={2}
+          />
         )}
       </div>
-    </List>
-  );
-};
+    );
+  }
+}

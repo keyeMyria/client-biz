@@ -18,8 +18,9 @@ class applyMessageStore {
   constructor() {
     extendObservable(this, {
       messages: [],
-      applyDS: computed(() => this.messages.filter(m => !m.accept)),
+      DS: computed(() => this.messages.filter(m => !m.accept)),
       loading: false,
+      landed: false,
     });
   }
   load = action(async (id) => {
@@ -34,6 +35,7 @@ class applyMessageStore {
       console.log(e, 'load invite message');
     }
     this.loading = false;
+    if (!this.landed) this.landed = true;
   });
 
   serviceType = {
@@ -55,7 +57,8 @@ class applyMessageStore {
       console.log(resp, type);
       runInAction('after accept', () => {
         if (resp.code === '0') {
-          this.messages = [...this.messages.filter(m => m.id !== id)]
+          this.messages = [...this.messages.filter(m => m.id !== id)];
+          Toast.show(type === this.serviceType.ACCEPT ? '已同意该用户加入' : '已拒绝该用户加入');
         } else {
           Toast.show(resp.msg || '抱歉，提交失败，请稍后重试');
         }
@@ -72,8 +75,9 @@ class inviteMessageStore {
   constructor() {
     extendObservable(this, {
       messages: [],
-      inviteDS: computed(() => this.messages.filter(m => !m.accept)),
+      DS: computed(() => this.messages.filter(m => !m.accept)),
       loading: false,
+      landed: false,
     });
   }
   load = action(async (id) => {
@@ -88,6 +92,7 @@ class inviteMessageStore {
       console.log(e, 'load invite message');
     }
     this.loading = false;
+    if (!this.landed) this.landed = true;
   });
 
   serviceType = {
@@ -106,11 +111,10 @@ class inviteMessageStore {
         case this.serviceType.REFUSE: service = MerchantSvc.refuseMerchantInvite; break;
       }
       const resp = await service(id);
-      console.log(resp, type);
       runInAction('after accept', () => {
         if (resp.code === '0') {
-          this.messages = [...this.messages.filter(m => m.id !== id)]
-          Toast.show('已同意加入该商户');
+          this.messages = [...this.messages.filter(m => m.id !== id)];
+          Toast.show(type === this.serviceType.ACCEPT ? '已同意加入该商户' : '已拒绝加入该商户');
         } else {
           Toast.show(resp.msg || '抱歉，提交失败，请稍后重试');
         }
@@ -123,6 +127,26 @@ class inviteMessageStore {
   });
 }
 
+const MessageType = {
+  INVITE: 0,
+  APPLY: 1,
+};
+
+const applyStore = new applyMessageStore();
+const inviteStore = new inviteMessageStore();
+
+export default class Message extends React.PureComponent {
+  render() {
+    return (
+      <div className="search-content">
+        <MessageList store={applyStore} type={MessageType.APPLY}/>
+        <MessageList store={inviteStore} type={MessageType.INVITE}/>
+        <div style={{flex: 1}}/>
+      </div>
+    );
+  }
+}
+
 const iconButtonElement = (
   <IconButton
     touch={true}
@@ -133,94 +157,74 @@ const iconButtonElement = (
   </IconButton>
 );
 
-const MessageType = {
-  INVITE: 0,
-  APPLY: 1,
-};
-
-
-const MessageList = ({listData, loading, serviceAction, actionType, type}) => {
-  let headerTxt = '';
-  let messageTip = '';
-  let primaryTxtTip = '';
-  switch (type) {
-    default: return;
-    case MessageType.INVITE:
-      headerTxt = '商户邀请';
-      messageTip = '邀请加入商户';
-      primaryTxtTip = '商户';
-      break;
-    case MessageType.APPLY:
-      headerTxt = '用户申请';
-      messageTip = '申请加入商户';
-      primaryTxtTip = '用户';
-      break;
-  }
-  const isInvite = type === MessageType.INVITE;
-  return (
-    <List className='search-list'>
-      <div style={{backgroundColor: '#FFF'}}>
-        <Subheader >{headerTxt}</Subheader>
-        {loading && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
-        {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center'}}>暂无内容</p>}
-        {(listData && listData.length > 0) && <Divider inset={true} />}
-      </div>
-      <div className='list-container'>
-        {
-          listData && listData.map((item, index) => (
-            <div key={index} style={{backgroundColor: '#FFF'}}>
-              <ListItem
-                leftIcon={<MailIcon />}
-                rightIconButton={(
-                  <IconMenu iconButtonElement={iconButtonElement}>
-                    <MenuItem onTouchTap={() => serviceAction(item.id, actionType.ACCEPT)}>同意</MenuItem>
-                    <MenuItem onTouchTap={() => serviceAction(item.id, actionType.REFUSE)}>拒绝</MenuItem>
-                  </IconMenu>
-                )}
-                primaryText={`${primaryTxtTip}: ${isInvite ? item.mer_name : item.name}`}
-                secondaryText={
-                  <p>
-                    <span style={{color: darkBlack}}>{messageTip}</span><br />
-                    {item.create_time}
-                  </p>
-                }
-                secondaryTextLines={2}
-              />
-              {(listData.length && ((listData.length - 1) !== index)) && <Divider inset={true} />}
-            </div>
-          ))
-        }
-      </div>
-    </List>
-  );
-};
-
 @inject('user')
 @observer
-export default class Message extends React.Component {
-  // isAdmin = this.props.user.user.current && (this.props.user.user.current.is_admin === 1);
-  // notJoinMerchant = !(this.props.user.user.current && this.props.user.user.current.mer_id);
-  applyStore = new applyMessageStore();
-  inviteStore = new inviteMessageStore();
-
+class MessageList extends React.Component {
+  store = this.props.store;
   componentWillMount() {
+    const {type} = this.props;
     const currentUser = this.props.user.user.current;
-    if (!this.props.user.user.current) return;
-    this.applyStore.load(currentUser.mer_id);
-    this.inviteStore.load(currentUser.id);
-    // if (this.isAdmin) this.applyStore.load(currentUser.mer_id);
-    // if (this.notJoinMerchant) this.inviteStore.load(currentUser.id);
+    if (!currentUser) return;
+    this.store.load(type === MessageType.APPLY ? currentUser.mer_id : currentUser.id);
   }
-
   render() {
+    const {DS, loading, serviceType, landed} = this.store;
+    const {type} = this.props;
+    const isInvite = type === MessageType.INVITE;
+    const serviceAction = isInvite ? this.store.handleInviteAction : this.store.applyAction;
+
+    let headerTxt = '';
+    let messageTip = '';
+    let primaryTxtTip = '';
+    switch (type) {
+      default: return;
+      case MessageType.INVITE:
+        headerTxt = '商户邀请';
+        messageTip = '邀请加入商户';
+        primaryTxtTip = '商户';
+        break;
+      case MessageType.APPLY:
+        headerTxt = '用户申请';
+        messageTip = '申请加入商户';
+        primaryTxtTip = '用户';
+        break;
+    }
+
     return (
-      <div className="search-content">
-        <MessageList listData={this.applyStore.applyDS} loading={this.applyStore.loading} type={MessageType.APPLY}
-                     serviceAction={this.applyStore.applyAction} actionType={this.applyStore.serviceType}/>
-        <MessageList listData={this.inviteStore.inviteDS} loading={this.inviteStore.loading} type={MessageType.INVITE}
-                     serviceAction={this.inviteStore.handleInviteAction} actionType={this.inviteStore.serviceType}/>
-        <div style={{flex: 1}}/>
-      </div>
+      <List className='search-list'>
+        <div style={{backgroundColor: '#FFF'}}>
+          <Subheader >{headerTxt}</Subheader>
+          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
+          {!DS.length && !loading && <p className="none-data" style={{textAlign: 'center'}}>暂无内容</p>}
+          {(DS.length > 0) && <Divider inset={true} />}
+        </div>
+        <div className='list-container'>
+          {
+            DS.map((item, index) => (
+              <div key={index} style={{backgroundColor: '#FFF'}}>
+                <ListItem
+                  leftIcon={<MailIcon />}
+                  rightIconButton={(
+                    <IconMenu iconButtonElement={iconButtonElement}>
+                      <MenuItem onTouchTap={() => serviceAction(item.id, serviceType.ACCEPT)}>同意</MenuItem>
+                      <MenuItem onTouchTap={() => serviceAction(item.id, serviceType.REFUSE)}>拒绝</MenuItem>
+                    </IconMenu>
+                  )}
+                  primaryText={`${primaryTxtTip}: ${isInvite ? item.mer_name : item.name}`}
+                  secondaryText={
+                    <p>
+                      <span style={{color: darkBlack}}>{messageTip}</span><br />
+                      {item.create_time}
+                    </p>
+                  }
+                  secondaryTextLines={2}
+                />
+                {((DS.length - 1) !== index) && <Divider inset={true} />}
+              </div>
+            ))
+          }
+        </div>
+      </List>
     );
   }
 }
