@@ -14,7 +14,7 @@ class Partners {
 
   @action load = async () => {
     if (this.loading) return;
-    if (!this.landed) this.loading = true;
+    this.loading = true;
     const pageNo = this.pageNo > 1 ? this.pageNo : null;
     try {
       const resp = await BaseSvc.getPartnerList(pageNo, this.pageSize);

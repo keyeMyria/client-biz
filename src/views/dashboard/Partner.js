@@ -123,8 +123,16 @@ export default class Partner extends React.PureComponent {
       <div style={{flex: 1}}>
         <this.TabBar />
         <div className="main-board">
-          <DataList type={ListType.PARTNERS} listData={this.partners.DS} loading={this.partners.loading} currentUser={current}/>
-          {isAdmin && <DataList type={ListType.INVITE} listData={this.invitations.DS} loading={this.invitations.loading}/>}
+          <DataList type={ListType.PARTNERS}
+                    listData={this.partners.DS}
+                    loading={this.partners.loading}
+                    hasMore={this.partners.hasMore}
+                    loadMore={this.partners.load}
+                    landed={this.partners.landed}
+                    currentUser={current}/>
+          {isAdmin && <DataList type={ListType.INVITE}
+                                listData={this.invitations.DS}
+                                loading={this.invitations.loading}/>}
         </div>
       </div>
     );
@@ -158,7 +166,7 @@ const getPartnerFlag = flag => {
   }
 };
 
-const DataList = ({listData, loading, type, currentUser}) => {
+const DataList = ({listData, loading, type, currentUser, hasMore, loadMore, landed}) => {
   const isAdmin = currentUser && (currentUser.is_admin === 1);
   let headerTxt = '';
   let messageA = '';
@@ -194,12 +202,11 @@ const DataList = ({listData, loading, type, currentUser}) => {
   }
   const isInvite = type === ListType.INVITE;
   const handleAddPartner = () => BizDialog.onOpen('添加合作伙伴', <AddPartner/>);
-  // TODO 查看更多
   return (
     <List style={{width: 400, marginRight: 10}}>
       <div style={{backgroundColor: '#FFF'}}>
         <Subheader >{headerTxt}</Subheader>
-        {loading && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
+        {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
         {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center', paddingBottom: 20}}>{noDataTxt}</p>}
         {(listData && listData.length > 0) && <Divider inset={true} />}
       </div>
@@ -223,15 +230,16 @@ const DataList = ({listData, loading, type, currentUser}) => {
                 }
                 secondaryTextLines={2}
               />
-              {(listData.length && ((listData.length - 1) !== index)) && <Divider inset={true} />}
+              {((listData.length - 1) !== index) && <Divider inset={true} />}
             </div>
           ))
         }
       </div>
-      {!isInvite && isAdmin && (
+      {!isInvite && (
         <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-          <Divider inset={true} />
-          <FlatButton label="添加合作伙伴" primary={true} onTouchTap={handleAddPartner}/>
+          {(isAdmin || hasMore) && <Divider inset={true} />}
+          {isAdmin && <FlatButton label="添加合作伙伴" primary={true} onTouchTap={handleAddPartner}/>}
+          {hasMore && <FlatButton label="加载更多" primary={true} onTouchTap={loadMore}/>}
         </div>
       )}
     </List>
