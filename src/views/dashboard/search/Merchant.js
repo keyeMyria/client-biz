@@ -270,10 +270,10 @@ const MemberList = ({listData, headerTxt, loading, currentUser, deleteUser}) => 
         {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center'}}>商户暂无成员</p>}
         {(listData && listData.length > 0) && <Divider inset={true} />}
       </div>
-      <div style={{overflowY: 'auto', overflowX: 'hidden',backgroundColor: '#FFF'}}>
+      <div className='list-container'>
         {
           listData && listData.map((item, index) => (
-            <div key={index}>
+            <div key={index} style={{backgroundColor: '#FFF'}}>
               <ListItem
                 leftIcon={<MemberIcon />}
                 rightIconButton={(
@@ -293,15 +293,12 @@ const MemberList = ({listData, headerTxt, loading, currentUser, deleteUser}) => 
             </div>
           ))
         }
-      </div>
-      {
-        isAdmin && (
+        {isAdmin && (
           <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
             <Divider inset={true} />
             <FlatButton label="邀请用户" primary={true} onTouchTap={openInviteDialog}/>
-          </div>
-        )
-      }
+          </div>)}
+      </div>
     </List>
   );
 };
@@ -316,10 +313,10 @@ const MerchantList = ({listData, headerTxt, loading, switchMerchant, currentUser
         {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center'}}>暂未加入其他商户</p>}
         {(listData && listData.length > 0) && <Divider inset={true} />}
       </div>
-      <div style={{overflowY: 'auto', overflowX: 'hidden',backgroundColor: '#FFF'}}>
+      <div className='list-container'>
         {
           listData && listData.map((item, index) => (
-            <div key={index}>
+            <div key={index} style={{backgroundColor: '#FFF'}}>
               <ListItem
                 leftIcon={<MerchantIcon />}
                 rightIconButton={<IconMenu iconButtonElement={iconButtonElement}>
@@ -340,10 +337,10 @@ const MerchantList = ({listData, headerTxt, loading, switchMerchant, currentUser
             </div>
           ))
         }
-      </div>
-      <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-        <Divider inset={true} />
-        <FlatButton label="加入商户" primary={true} onTouchTap={openApplyDialog}/>
+        <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+          <Divider inset={true} />
+          <FlatButton label="加入商户" primary={true} onTouchTap={openApplyDialog}/>
+        </div>
       </div>
     </List>
   );
@@ -360,19 +357,19 @@ const DepartmentList = ({listData, headerTxt, loading, currentUser}) => {
         {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center'}}>商户暂无部门</p>}
         {(listData && listData.length > 0) && <Divider inset={true} />}
       </div>
-      <div style={{overflowY: 'auto', overflowX: 'hidden',backgroundColor: '#FFF'}}>
+      <div className='list-container'>
         {
           listData && listData.map((item, index) => (
             <DepartmentItem key={index} item={item} isAdmin={isAdmin} noDivider={listData.length && ((listData.length - 1) !== index)}/>
           ))
         }
+        {isAdmin && (
+          <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+            <Divider inset={true} />
+            <FlatButton label="添加部门" primary={true} onTouchTap={() => BizDialog.onOpen('创建部门', <AddDepartment/>)}/>
+          </div>
+        )}
       </div>
-      {isAdmin && (
-        <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-          <Divider inset={true} />
-          <FlatButton label="添加部门" primary={true} onTouchTap={() => BizDialog.onOpen('创建部门', <AddDepartment/>)}/>
-        </div>
-      )}
     </List>
   );
 };
@@ -382,7 +379,7 @@ class DepartmentItem extends React.Component {
   store = MerchantDepartment;
   render() {
     const {item, isAdmin, noDivider, isNested} = this.props;
-    const nestStyle = isNested ? {paddingLeft: 5, borderTop: '1px solid #E6E6E6'} : {};
+    const nestStyle = isNested ? {paddingLeft: 5, borderTop: '1px solid #E6E6E6', backgroundColor: '#FFF'} : {backgroundColor: '#FFF'};
     return (
       <div style={nestStyle}>
         <ListItem

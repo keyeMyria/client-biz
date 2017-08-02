@@ -17,9 +17,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import SearchIcon from 'material-ui/svg-icons/action/search';
 import FinancialSvc from '../../../services/financialBill';
 import {ToastStore as Toast} from "../../../components/Toast";
-// import {BizDialog} from "../../../components/Dialog";
 import FinancialDetail, {FinancialDrawer} from "./Detail";
-// import {DrawerStore} from "../../../components/Drawer";
 
 class FinBillStore {
   @observable DS = [];
@@ -196,10 +194,10 @@ const DataList = ({listData, landed, loadMore, hasMore, abort}) => {
                                                         style={{textAlign: 'center', paddingBottom: 20, color: '#CCC'}}>尚未生成结算单</p>}
         {(listData && listData.length > 0) && <Divider inset={true} />}
       </div>
-      <div style={{overflowY: 'auto', overflowX: 'hidden',backgroundColor: '#FFF'}}>
+      <div className='list-container'>
         {
           listData && listData.map((item, index) => (
-            <div key={index}>
+            <div key={index} style={{backgroundColor: '#FFF'}}>
               <ListItem
                 leftIcon={<BillIcon />}
                 rightIconButton={(
@@ -222,10 +220,12 @@ const DataList = ({listData, landed, loadMore, hasMore, abort}) => {
             </div>
           ))
         }
-        <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-          <Divider inset={true} />
-          {hasMore && <FlatButton label="加载更多" primary={true} onTouchTap={loadMore}/>}
-        </div>
+        {hasMore && (
+          <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+            <Divider inset={true} />
+            <FlatButton label="加载更多" primary={true} onTouchTap={loadMore}/>
+          </div>
+        )}
       </div>
     </List>
   );

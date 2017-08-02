@@ -91,14 +91,10 @@ export const DraftStore = new MailDraftStore();
 
 class SearchStore {
   @observable DS = [];
-  @observable recordCount = 0;
-  @observable pageNo = 1;
-  @observable hasMore = false;
   @observable searchKeyWord = '';
   @observable searchType = '';
   @observable submitting = false;
   @observable searched = false;
-  pageSize = 20;
 
   @computed get searchValidated() {
     return !!this.searchKeyWord && (!!this.searchType || this.searchType === 0);
@@ -110,14 +106,10 @@ class SearchStore {
     if (this.submitting || !this.searchValidated) return;
     this.submitting = true;
     try {
-      // const pageNo = this.pageNo > 1 ? this.pageNo : null;
       const resp = await MailSvc.search(this.searchType, this.searchKeyWord);
       runInAction('after search', () => {
         if (resp.code === '0') {
-          this.DS = this.pageNo > 1 ? [...this.DS, ...resp.data] : resp.data;
-          this.recordCount = (resp.data.pagination && resp.data.pagination.record_count) || 0;
-          this.hasMore = this.DS.length < this.recordCount;
-          if (this.hasMore) this.pageNo++;
+          this.DS = resp.data;
         } else Toast.show(resp.msg || '抱歉，搜索失败，请稍后重试');
       });
     } catch (e) {
@@ -188,7 +180,7 @@ const iconButtonElement = (
 
 const DataList = ({listData, landed, loadMore, hasMore, onDelete}) => {
   return (
-    <List style={{width: 400, marginRight: 10}}>
+    <List style={{width: 400, marginRight: 10, height: '96%'}}>
       <div style={{backgroundColor: '#FFF'}}>
         <Subheader>邮件草稿</Subheader>
         {!landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
@@ -196,10 +188,10 @@ const DataList = ({listData, landed, loadMore, hasMore, onDelete}) => {
                                                           style={{textAlign: 'center', paddingBottom: 20, color: '#CCC'}}>尚未保存过草稿</p>}
         {(listData && listData.length > 0) && <Divider inset={true} />}
       </div>
-      <div style={{overflowY: 'auto', overflowX: 'hidden',backgroundColor: '#FFF'}}>
+      <div style={{overflowY: 'auto', height: '90%'}}>
         {
           listData && listData.map((item, index) => (
-            <div key={index}>
+            <div key={index} style={{backgroundColor: '#FFF'}}>
               <ListItem
                 leftIcon={<ContentDrafts />}
                 rightIconButton={(
@@ -226,7 +218,7 @@ const DataList = ({listData, landed, loadMore, hasMore, onDelete}) => {
   );
 };
 
-const SearchList = ({listData, searched, loadMore, hasMore}) => {
+const SearchList = ({listData, searched}) => {
   return searched ? (
     <List style={{flex: 1}}>
       <div style={{backgroundColor: '#FFF'}}>
@@ -254,12 +246,6 @@ const SearchList = ({listData, searched, loadMore, hasMore}) => {
             </div>
           ))
         }
-        {/*{hasMore && (*/}
-          {/*<div style={{backgroundColor: '#FFF', textAlign: 'right'}}>*/}
-            {/*<Divider inset={true} />*/}
-            {/*<FlatButton label="加载更多" primary={true} onTouchTap={loadMore}/>*/}
-          {/*</div>*/}
-        {/*)}*/}
       </div>
     </List>
   ) : null;

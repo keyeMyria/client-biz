@@ -210,10 +210,10 @@ const DataList = ({listData, loading, type, currentUser, hasMore, loadMore, land
         {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center', paddingBottom: 20}}>{noDataTxt}</p>}
         {(listData && listData.length > 0) && <Divider inset={true} />}
       </div>
-      <div style={{overflowY: 'auto', overflowX: 'hidden',backgroundColor: '#FFF'}}>
+      <div style={{overflowY: 'auto', height: '90%'}}>
         {
           listData && listData.map((item, index) => (
-            <div key={index}>
+            <div key={index} style={{backgroundColor: '#FFF'}}>
               <ListItem
                 leftIcon={leftIcon}
                 rightIconButton={(
@@ -234,15 +234,14 @@ const DataList = ({listData, loading, type, currentUser, hasMore, loadMore, land
             </div>
           ))
         }
+        {!isInvite && (
+          <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
+            {(isAdmin || hasMore) && <Divider inset={true} />}
+            {isAdmin && <FlatButton label="添加合作伙伴" primary={true} onTouchTap={handleAddPartner}/>}
+            {hasMore && <FlatButton label="加载更多" primary={true} onTouchTap={loadMore}/>}
+          </div>
+        )}
       </div>
-      {!isInvite && (
-        <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-          {(isAdmin || hasMore) && <Divider inset={true} />}
-          {isAdmin && <FlatButton label="添加合作伙伴" primary={true} onTouchTap={handleAddPartner}/>}
-          {hasMore && <FlatButton label="加载更多" primary={true} onTouchTap={loadMore}/>}
-        </div>
-      )}
     </List>
   );
 };
-

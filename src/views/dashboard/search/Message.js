@@ -165,10 +165,10 @@ const MessageList = ({listData, loading, serviceAction, actionType, type}) => {
         {!(listData && listData.length) && !loading && <p className="none-data" style={{textAlign: 'center'}}>暂无内容</p>}
         {(listData && listData.length > 0) && <Divider inset={true} />}
       </div>
-      <div style={{overflowY: 'auto', overflowX: 'hidden',backgroundColor: '#FFF'}}>
+      <div className='list-container'>
         {
           listData && listData.map((item, index) => (
-            <div key={index}>
+            <div key={index} style={{backgroundColor: '#FFF'}}>
               <ListItem
                 leftIcon={<MailIcon />}
                 rightIconButton={(
