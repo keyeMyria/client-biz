@@ -49,7 +49,8 @@ class MerchantMemberStore {
       }
     });
     this.members = [...this.members];
-  }
+  };
+  @action clear = () => this.members = [];
 }
 
 export default new MerchantMemberStore();

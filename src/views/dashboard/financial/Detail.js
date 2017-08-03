@@ -253,7 +253,7 @@ export default class FinancialDetail extends React.PureComponent {
             <div style={{paddingLeft: 20}}>
               <TextField floatingLabelText="合作商户" value={detail.head.mer_name} disabled style={{marginRight: 20}}/>
               <TextField floatingLabelText="合作商户ID" value={detail.head.mer_id} disabled style={{marginRight: 20}}/>
-              <TextField floatingLabelText="负责人" value={`${detail.head.user_name} (id: ${detail.head.user_id})`}
+              <TextField floatingLabelText="负责人" value={`${detail.head.user_name || '暂无'} (id: ${detail.head.user_id})`}
                          disabled style={{marginRight: 20}}/>
               <br/>
               <Checkbox

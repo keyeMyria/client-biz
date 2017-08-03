@@ -14,6 +14,7 @@ import MerchantSvc from '../../../services/merchant';
 import MemberIcon from 'material-ui/svg-icons/action/face';
 import MerchantIcon from 'material-ui/svg-icons/maps/local-mall';
 import DepartmentIcon from 'material-ui/svg-icons/action/perm-contact-calendar';
+import ChildDepartmentIcon from 'material-ui/svg-icons/social/people';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import CircularProgress from 'material-ui/CircularProgress';
@@ -69,7 +70,7 @@ class MerchantListStore {
     if (!this.landed) this.landed = true;
   };
 
-  @action quitMerchant = async (merchant) => {
+  @action quitMerchant = async (merchant, updateUser) => {
     if (this.quiting) return;
     this.quiting = true;
     try {
@@ -79,10 +80,12 @@ class MerchantListStore {
           this.merchantList = this.merchantList.filter(m => m.mer_id !== merchant.mer_id);
           Toast.show('退出成功');
           BizDialog.onClose();
-          console.log(Storage.getValue('user'));
-          if (merchant.mer_id === Storage.getValue('user').mer_id) {
-            MemberStore.load();
-            MerchantDepartment.load();
+          if ((merchant.mer_id === Storage.getValue('user').mer_id) && this.merchantList.length) {
+            this.switchMerchant(this.merchantList[0].mer_id, updateUser);
+          }
+          if (!this.merchantList.length) {
+            MemberStore.clear();
+            MerchantDepartment.clear();
           }
         } else Toast.show(resp.msg || '抱歉，退出失败，请刷新页面后重新尝试');
       });
@@ -91,9 +94,26 @@ class MerchantListStore {
     }
     this.quiting = false;
   };
+
+  @action switchMerchant = async (id, updateUser) => {
+    if (this.switching) return;
+    this.switching = true;
+    try {
+      const require_userinfo = 1;
+      const resp = await MerchantSvc.switchMerchant(id, require_userinfo);
+      if (resp.code === '0') {
+        updateUser && updateUser();
+        MemberStore.load();
+        MerchantDepartment.load();
+      } else Toast.show(resp.msg || '切换商户失败，请刷新页面重试');
+    } catch (e) {
+      console.log(e, 'switch merchant');
+    }
+    this.switching = false;
+  };
 }
 
-const merchantListStore = new MerchantListStore();
+export const merchantListStore = new MerchantListStore();
 
 @inject('user')
 @observer
@@ -113,7 +133,9 @@ class MerchantList extends React.Component {
       const resp = await MerchantSvc.switchMerchant(id, require_userinfo);
       if (resp.code === '0') {
         this.props.user.update(resp.data);
-        Toast.show('切换商户成功')
+        Toast.show('切换商户成功');
+        MemberStore.load();
+        MerchantDepartment.load();
       } else Toast.show(resp.msg || '切换商户失败，请稍后重试');
     } catch (e) {
       console.log(e, 'switch merchant');
@@ -146,7 +168,7 @@ class MerchantList extends React.Component {
                         <MenuItem onTouchTap={this.switchMerchant.bind(null, item.mer_id)}>切换至该商户</MenuItem>
                       )}
                       <MenuItem onTouchTap={() => BizDialog.onOpen('确认退出',
-                        <ComfirmDialog submitAction={quitMerchant.bind(null, item)}/>)}>退出该商户</MenuItem>
+                        <ComfirmDialog submitAction={quitMerchant.bind(null, item, this.props.user.getUser)}/>)}>退出该商户</MenuItem>
                     </IconMenu>
                   )}
                   primaryText={item.username || `商户: ${item.mer_name}`}
@@ -359,7 +381,8 @@ class DepartmentStore {
       Toast.show('抱歉，发生未知错误，请刷新页面稍后重试');
     }
     this.searching = false;
-  }
+  };
+  @action clear = () => this.departmentList = [];
 }
 
 const MerchantDepartment = new DepartmentStore();
@@ -406,11 +429,11 @@ class DepartmentItem extends React.Component {
   store = MerchantDepartment;
   render() {
     const {item, isAdmin, noDivider, isNested} = this.props;
-    const nestStyle = isNested ? {paddingLeft: 5, borderTop: '1px solid #E6E6E6', backgroundColor: '#FFF'} : {backgroundColor: '#FFF'};
+    const nestStyle = isNested ? {borderTop: '1px solid #E6E6E6', backgroundColor: '#FFF'} : {backgroundColor: '#FFF'};
     return (
       <div style={nestStyle}>
         <ListItem
-          leftIcon={<DepartmentIcon />}
+          leftIcon={isNested ? <ChildDepartmentIcon /> : <DepartmentIcon />}
           rightIconButton={(
             <IconMenu iconButtonElement={iconButtonElement}>
               <MenuItem onTouchTap={() => this.store.openEditDepDialog(item)}>{isAdmin ? '查看/编辑' : '查看'}</MenuItem>
@@ -426,7 +449,7 @@ class DepartmentItem extends React.Component {
           primaryText={`${isNested ? '子部门' : '部门'}: ${item.name}`}
           secondaryText={
             <p>
-              <span style={{color: darkBlack}}>id: {item.id}</span><br />
+              <span style={{color: darkBlack}}>id: {item.id}{isNested ? ` (上级部门id: ${item.parent_id})` : ''}</span><br />
               {`备注：${item.remark || '暂无'}`}
             </p>
           }

@@ -9,9 +9,12 @@ import IconButton from 'material-ui/IconButton';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import IconMenu from 'material-ui/IconMenu';
 import MenuItem from 'material-ui/MenuItem';
+import SelectField from 'material-ui/SelectField';
 import MerchantSvc from '../../../services/merchant';
 import MailIcon from 'material-ui/svg-icons/content/mail';
+import ReadMailIcon from 'material-ui/svg-icons/content/drafts';
 import CircularProgress from 'material-ui/CircularProgress';
+import RaisedButton from 'material-ui/RaisedButton';
 import {ToastStore as Toast} from "../../../components/Toast";
 
 class applyMessageStore {
@@ -21,6 +24,10 @@ class applyMessageStore {
 
   @computed get DS() {
     return this.messages.filter(m => !m.accept);
+  };
+
+  @computed get historyDS() {
+    return this.messages.filter(m => !!m.accept);
   };
 
   @action load = async (id) => {
@@ -43,7 +50,7 @@ class applyMessageStore {
     REFUSE: 'refuse',
   };
 
-  @action applyAction = async (id, type) => {
+  @action applyAction = async (id, type, updateUser) => {
     if (this.submitting || !id) return;
     this.submitting = true;
     try {
@@ -58,6 +65,9 @@ class applyMessageStore {
         if (resp.code === '0') {
           this.messages = [...this.messages.filter(m => m.id !== id)];
           Toast.show(type === this.serviceType.ACCEPT ? '已同意该用户加入' : '已拒绝该用户加入');
+          if (type === this.serviceType.ACCEPT) {
+            updateUser && updateUser();
+          }
         } else {
           Toast.show(resp.msg || '抱歉，提交失败，请稍后重试');
         }
@@ -99,7 +109,7 @@ class inviteMessageStore {
     REFUSE: 'refuse',
   };
 
-  @action handleInviteAction = async (id, type) => {
+  @action handleInviteAction = async (id, type, updateUser) => {
     if (this.submitting || !id) return;
     this.submitting = true;
     try {
@@ -114,6 +124,9 @@ class inviteMessageStore {
         if (resp.code === '0') {
           this.messages = [...this.messages.filter(m => m.id !== id)];
           Toast.show(type === this.serviceType.ACCEPT ? '已同意加入该商户' : '已拒绝加入该商户');
+          if (type === this.serviceType.ACCEPT) {
+            updateUser && updateUser();
+          }
         } else {
           Toast.show(resp.msg || '抱歉，提交失败，请稍后重试');
         }
@@ -140,7 +153,7 @@ export default class Message extends React.PureComponent {
       <div className="search-content">
         <MessageList store={applyStore} type={MessageType.APPLY}/>
         <MessageList store={inviteStore} type={MessageType.INVITE}/>
-        <div style={{flex: 1}}/>
+        <History />
       </div>
     );
   }
@@ -207,7 +220,7 @@ class MessageList extends React.Component {
                   leftIcon={<MailIcon />}
                   rightIconButton={(
                     <IconMenu iconButtonElement={iconButtonElement}>
-                      <MenuItem onTouchTap={() => serviceAction(item.id, serviceType.ACCEPT)}>同意</MenuItem>
+                      <MenuItem onTouchTap={() => serviceAction(item.id, serviceType.ACCEPT, this.props.user.getUser)}>同意</MenuItem>
                       <MenuItem onTouchTap={() => serviceAction(item.id, serviceType.REFUSE)}>拒绝</MenuItem>
                     </IconMenu>
                   )}
@@ -228,4 +241,87 @@ class MessageList extends React.Component {
       </List>
     );
   }
+}
+
+@inject('user')
+@observer
+class History extends React.Component {
+  store = applyStore;
+  constructor(props) {
+    super(props);
+    this.state = {
+      showHistory: false,
+      filterValue: 1,
+    }
+  }
+  setHistoryVisible = () => this.setState({showHistory: true});
+  get listDS() {
+    const {filterValue} = this.state;
+    switch (filterValue) {
+      default: return this.store.historyDS;
+      case 1: return this.store.historyDS;
+      case 2: return this.store.historyDS.filter(item => item.accept === 1);
+      case 3: return this.store.historyDS.filter(item => item.accept === 2);
+    }
+  }
+  render() {
+    const {user} = this.props;
+    const {showHistory} = this.state;
+    const {historyDS, loading} = this.store;
+    return !showHistory ? (
+      <div className='message-history'>
+        {!!user.user.current.is_admin && !!historyDS.length && (
+          <RaisedButton label="查看历史申请" onTouchTap={this.setHistoryVisible}/>
+        )}
+      </div>
+    ) : (
+      <List className='search-list'>
+        <div style={{backgroundColor: '#FFF'}}>
+          <Subheader style={{position: 'relative'}}>
+            历史申请记录
+            <this.FilterItem />
+          </Subheader>
+          {!this.listDS.length && !loading && <p className="none-data" style={{textAlign: 'center'}}>尚无记录</p>}
+          {(this.listDS.length > 0) && <Divider inset={true} />}
+        </div>
+        <div className='list-container'>
+          {
+            this.listDS.map((item, index) => (
+              <div key={index} style={{backgroundColor: '#FFF'}}>
+                <ListItem
+                  leftIcon={<ReadMailIcon />}
+                  primaryText={`用户: ${item.name}`}
+                  secondaryText={
+                    <p>
+                      <span style={{color: darkBlack}}>
+                        处理结果：{item.accept === 1 ? '已同意' : '已拒绝'}
+                      </span><br />
+                      处理时间：{item.accept_time}
+                    </p>
+                  }
+                  secondaryTextLines={2}
+                />
+                {((historyDS.length - 1) !== index) && <Divider inset={true} />}
+              </div>
+            ))
+          }
+        </div>
+      </List>
+    );
+  }
+  handleFilterChange = (event, index, filterValue) => this.setState({filterValue});
+  FilterItem = () => (
+    <SelectField
+      hintText="筛选"
+      value={this.state.filterValue}
+      labelStyle={{ color: '#999', paddingRight: 26, top: -3 }}
+      style={{position: 'absolute', right: 0, top: 0, width: 100, textAlign: 'center', fontSize: 12}}
+      underlineStyle={{borderBottom: 'none'}}
+      onChange={this.handleFilterChange}
+    >
+      <MenuItem value={1} primaryText="全部" />
+      <MenuItem value={2} primaryText="已接受" />
+      <MenuItem value={3} primaryText="已拒绝" />
+    </SelectField>
+  )
 }
