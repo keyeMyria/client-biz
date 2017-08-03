@@ -9,19 +9,22 @@ import merchantSvc from '../../services/merchant';
 
 @inject('user')
 @observer
-export default class DialogForm extends React.PureComponent {
-  state = {value: '', submitting: false};
+export default class DialogForm extends React.Component {
+  state = {value: '', submitting: false, remark: ''};
   render() {
     const {type, hintTxt, submitTxt} = this.props;
-    const {value} = this.state;
+    const {value, remark} = this.state;
     let onTouchTap = null;
+    let showRemark = false;
     switch (type) {
       default: return null;
       case 'invite':
         onTouchTap = this.submitInviteUser;
+        showRemark = true;
         break;
       case 'apply':
         onTouchTap = this.submitJoinMerchant;
+        showRemark = true;
         break;
       case 'switchMerchant':
         onTouchTap = this.switchMerchant;
@@ -29,8 +32,17 @@ export default class DialogForm extends React.PureComponent {
     }
     return (
       <form onSubmit={this.onTouchTap} style={{paddingTop: 10}}>
-        <TextField hintText={hintTxt} value={value} type="text" onChange={e => this.setState({ value: e.target.value })}/>
-        <RaisedButton label={this.state.submitting ? null : submitTxt} primary={true} style={{marginLeft: 20}}
+        <TextField hintText={hintTxt}
+                   value={value}
+                   style={{marginRight: 20}}
+                   type="text"
+                   onChange={e => this.setState({ value: e.target.value })}/>
+        {showRemark && <TextField hintText='添加备注'
+                                  value={remark}
+                                  type="text"
+                                  style={{marginRight: 20}}
+                                  onChange={e => this.setState({ remark: e.target.value })}/>}
+        <RaisedButton label={this.state.submitting ? null : submitTxt} primary={true}
                       onTouchTap={onTouchTap} disabled={!value}
                       icon={this.state.submitting ? <CircularProgress size={28}/> : null}/>
       </form>
@@ -39,11 +51,11 @@ export default class DialogForm extends React.PureComponent {
 
   submitJoinMerchant = async (e) => {
     e.preventDefault();
-    const {submitting, value} = this.state;
+    const {submitting, value, remark} = this.state;
     if (submitting) return;
     this.setState({ submitting: true });
     try {
-      const resp = await merchantSvc.applyMerchant(`${value}`);
+      const resp = await merchantSvc.applyMerchant(`${value}`, remark);
       if (resp.code === '0') {
         ToastStore.show('已提交申请，请等待或联系商户通过');
         BizDialog.onClose();
@@ -57,12 +69,11 @@ export default class DialogForm extends React.PureComponent {
 
   submitInviteUser = async (e) => {
     e.preventDefault();
-    const {submitting, value} = this.state;
+    const {submitting, value, remark} = this.state;
     if (submitting) return;
     this.setState({ submitting: true });
     try {
-      const resp = await merchantSvc.inviteUser(value);
-      console.log(resp);
+      const resp = await merchantSvc.inviteUser(value, remark);
       if (resp.code === '0') {
         ToastStore.show('已发送邀请，请等待或联系用户确认');
         BizDialog.onClose();

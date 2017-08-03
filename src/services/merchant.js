@@ -24,24 +24,44 @@ const switchMerchant = async (mer_id, require_userinfo) => {
   return resp.data;
 };
 
-const applyMerchant = async (mer_id) => {
-  const resp = await axios.post('/biz_gateway/apply_join_merchant', {mer_id});
+const applyMerchant = async (mer_id, remark) => {
+  const resp = await axios.post('/biz_gateway/apply_join_merchant', {mer_id, remark});
   return resp.data;
 };
 
-const inviteUser = async (account) => {
-  const resp = await axios.post('/biz_gateway/invite_user', {account});
+const inviteUser = async (account, remark) => {
+  const resp = await axios.post('/biz_gateway/invite_user', {account, remark});
   return resp.data;
 };
 
 const getUserListByApply = async (id) => {
   const resp = await axios.post('/biz_gateway/batch_query_user_invite_req', {id});
-  return resp.data;
+  const {data} = resp;
+  if (data.data && data.data.length) {
+    const temp = {};
+    const filterDS = [];
+    data.data.forEach(item => temp[`${item.user_id}`] = item);
+    for (let i in temp) {
+      filterDS.push(temp[i]);
+    }
+    data.data = [...filterDS];
+  }
+  return data;
 };
 
 const getMerchantListByInvite = async (id) => {
   const resp = await axios.post('/biz_gateway/batch_query_merchant_invite_req', {id});
-  return resp.data;
+  const {data} = resp;
+  if (data.data && data.data.length) {
+    const temp = {};
+    const filterDS = [];
+    data.data.forEach(item => temp[`${item.mer_id}`] = item);
+    for (let i in temp) {
+      filterDS.push(temp[i]);
+    }
+    data.data = [...filterDS];
+  }
+  return data;
 };
 
 const getMerchantListByUser = async () => {

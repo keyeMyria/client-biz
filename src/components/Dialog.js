@@ -40,7 +40,10 @@ export const DialogComponent = observer(() => (
 export const ComfirmDialog = ({submitAction}) => (
   <div>
     <RaisedButton label="确定" primary={true} style={{width: '40%', marginRight: '15%'}}
-                  onTouchTap={submitAction}/>
+                  onTouchTap={() => {
+                    submitAction();
+                    BizDialog.onClose();
+                  }}/>
     <RaisedButton label="取消" secondary={true} style={{width: '40%'}} onTouchTap={BizDialog.onClose}/>
   </div>
 );

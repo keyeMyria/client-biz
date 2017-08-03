@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer, inject} from 'mobx-react';
-import {computed, action, runInAction, extendObservable} from 'mobx';
+import {observable, computed, action, runInAction} from 'mobx';
 import {List, ListItem} from 'material-ui/List';
 import Divider from 'material-ui/Divider';
 import Subheader from 'material-ui/Subheader';
@@ -15,15 +15,15 @@ import CircularProgress from 'material-ui/CircularProgress';
 import {ToastStore as Toast} from "../../../components/Toast";
 
 class applyMessageStore {
-  constructor() {
-    extendObservable(this, {
-      messages: [],
-      DS: computed(() => this.messages.filter(m => !m.accept)),
-      loading: false,
-      landed: false,
-    });
-  }
-  load = action(async (id) => {
+  @observable messages = [];
+  @observable loading = false;
+  @observable landed = false;
+
+  @computed get DS() {
+    return this.messages.filter(m => !m.accept);
+  };
+
+  @action load = async (id) => {
     if (this.loading) return;
     this.loading = true;
     try {
@@ -36,14 +36,14 @@ class applyMessageStore {
     }
     this.loading = false;
     if (!this.landed) this.landed = true;
-  });
+  };
 
   serviceType = {
     ACCEPT: 'accept',
     REFUSE: 'refuse',
   };
 
-  applyAction = action(async (id, type) => {
+  @action applyAction = async (id, type) => {
     if (this.submitting || !id) return;
     this.submitting = true;
     try {
@@ -54,7 +54,6 @@ class applyMessageStore {
         case this.serviceType.REFUSE: service = MerchantSvc.refuseUserApply; break;
       }
       const resp = await service(id);
-      console.log(resp, type);
       runInAction('after accept', () => {
         if (resp.code === '0') {
           this.messages = [...this.messages.filter(m => m.id !== id)];
@@ -68,19 +67,19 @@ class applyMessageStore {
       Toast.show('抱歉，发生未知错误，请稍后重试');
     }
     this.submitting = false;
-  });
+  };
 }
 
 class inviteMessageStore {
-  constructor() {
-    extendObservable(this, {
-      messages: [],
-      DS: computed(() => this.messages.filter(m => !m.accept)),
-      loading: false,
-      landed: false,
-    });
-  }
-  load = action(async (id) => {
+  @observable messages = [];
+  @observable loading = false;
+  @observable landed = false;
+
+  @computed get DS() {
+    return this.messages.filter(m => !m.accept);
+  };
+
+  @action load = async (id) => {
     if (this.loading) return;
     this.loading = true;
     try {
@@ -93,14 +92,14 @@ class inviteMessageStore {
     }
     this.loading = false;
     if (!this.landed) this.landed = true;
-  });
+  };
 
   serviceType = {
     ACCEPT: 'accept',
     REFUSE: 'refuse',
   };
 
-  handleInviteAction = action(async (id, type) => {
+  @action handleInviteAction = async (id, type) => {
     if (this.submitting || !id) return;
     this.submitting = true;
     try {
@@ -124,7 +123,7 @@ class inviteMessageStore {
       Toast.show('抱歉，发生未知错误，请稍后重试');
     }
     this.submitting = false;
-  });
+  };
 }
 
 const MessageType = {
@@ -169,8 +168,10 @@ class MessageList extends React.Component {
   }
   render() {
     const {DS, loading, serviceType, landed} = this.store;
-    const {type} = this.props;
+    const {type, user} = this.props;
     const isInvite = type === MessageType.INVITE;
+    if (!user.user.current.is_admin && !isInvite) return null;
+    // if (user.user.current.is_admin && isInvite) return null;
     const serviceAction = isInvite ? this.store.handleInviteAction : this.store.applyAction;
 
     let headerTxt = '';
@@ -213,7 +214,7 @@ class MessageList extends React.Component {
                   primaryText={`${primaryTxtTip}: ${isInvite ? item.mer_name : item.name}`}
                   secondaryText={
                     <p>
-                      <span style={{color: darkBlack}}>{messageTip}</span><br />
+                      <span style={{color: darkBlack}}>{item.remark || messageTip}</span><br />
                       {item.create_time}
                     </p>
                   }

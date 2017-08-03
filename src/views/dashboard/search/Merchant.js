@@ -183,7 +183,7 @@ class MemberList extends React.Component {
   openInviteDialog = () => BizDialog.onOpen('邀请用户', <DialogForm type='invite' hintTxt="请输入用户的账号" submitTxt="邀请"/>);
 
   render() {
-    const {memberList, loading, deleteUser, landed} = this.store;
+    const {memberList, loading, landed} = this.store;
     const currentUser = this.props.user.user.current;
     const isAdmin = currentUser && (currentUser.is_admin === 1);
     return (
@@ -205,7 +205,7 @@ class MemberList extends React.Component {
                       {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('设置部门',
                         <SetDepartment user={item}/>)}>设置部门</MenuItem>}
                       {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('移出商户',
-                        <ComfirmDialog submitAction={deleteUser.bind(null, item)}/>)}>移出商户</MenuItem>}
+                        <ComfirmDialog submitAction={this.store.delete.bind(null, item)}/>)}>移出商户</MenuItem>}
                     </IconMenu>
                   )}
                   primaryText={item.username || `用户名: ${item.user_name}`}
@@ -297,7 +297,6 @@ class DepartmentStore {
             this.nestedDepartment = {...this.nestedDepartment};
           }
           Toast.show('删除成功');
-          BizDialog.onClose();
         } else Toast.show(resp.msg || '抱歉，删除失败，请刷新页面稍后重试');
       });
     } catch (e) {
@@ -305,6 +304,7 @@ class DepartmentStore {
       Toast.show('抱歉，发生未知错误，请刷新页面稍后重试');
     }
     this.deleting = false;
+    BizDialog.onClose();
   };
   @action openEditDepDialog = item => {
     if (!item) return;
