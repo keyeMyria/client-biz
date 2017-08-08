@@ -15,7 +15,7 @@ class SearchState {
   @observable searching = false;
 
   @computed get searchValidated() {
-    return !!this.searchedBillNo;
+    return !!this.searchedBillNo && this.searchedBillNo.length === 18;
   }
 
   @action setSearchNo = val => this.searchedBillNo = val;
@@ -31,12 +31,12 @@ class SearchState {
           this.searchResult = resp.data.head;
         } else {
           this.searchResult = null;
-          Toast.show(resp.msg || '抱歉，搜索失败，请刷新页面后重新尝试');
+          Toast.show(resp.msg || '搜索失败');
         }
       });
     } catch (e) {
       console.log(e, 'search fin bill');
-      Toast.show('抱歉，发生未知错误，请刷新页面后重新尝试');
+      Toast.show('搜索失败');
     }
     this.searching = false;
   }

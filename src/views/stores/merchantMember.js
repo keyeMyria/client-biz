@@ -26,18 +26,18 @@ class MerchantMemberStore {
     this.loading = false;
     if (!this.landed) this.landed = true;
   };
-  @action delete = async (user) => {
+  @action onDelete = async (user) => {
     if (!user) return;
     try {
       const resp = await MerchantSvc.delUser(user.user_id);
-      runInAction('after delete user', () => {
+      runInAction('after onDelete user', () => {
         if (resp.code === '0') {
           this.members = this.members.filter(m => m.user_id !== user.user_id);
           Toast.show('删除成功');
         } else Toast.show(resp.msg || '抱歉，删除失败，请刷新页面稍后重试');
       })
     } catch (e) {
-      console.log(e, 'delete user from merchant');
+      console.log(e, 'onDelete user from merchant');
       Toast.show('抱歉，发生未知错误，请刷新页面稍后重试');
     }
   };

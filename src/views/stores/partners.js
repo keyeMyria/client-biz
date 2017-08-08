@@ -39,7 +39,7 @@ class Partners {
     this.load();
   };
 
-  @action delete = async (partner) => {
+  @action onDelete = async (partner) => {
     if (!partner && partner.partner_id) return;
     if (this.deleting) return;
     this.deleting = true;

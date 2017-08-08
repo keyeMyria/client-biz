@@ -227,7 +227,7 @@ class MemberList extends React.Component {
                       {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('设置部门',
                         <SetDepartment user={item}/>)}>设置部门</MenuItem>}
                       {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('移出商户',
-                        <ComfirmDialog submitAction={this.store.delete.bind(null, item)}/>)}>移出商户</MenuItem>}
+                        <ComfirmDialog submitAction={this.store.onDelete.bind(null, item)}/>)}>移出商户</MenuItem>}
                     </IconMenu>
                   )}
                   primaryText={item.username || `用户名: ${item.user_name}`}
@@ -306,12 +306,12 @@ class DepartmentStore {
     }
     this.adding = false;
   };
-  @action delete = async (item) => {
+  @action onDelete = async (item) => {
     if (this.deleting || !item) return;
     this.deleting = true;
     try {
       const resp = await BaseSvc.delDepartment(item.id);
-      runInAction('after delete dep', () => {
+      runInAction('after onDelete dep', () => {
         if (resp.code === '0') {
           this.departmentList = this.departmentList.filter(dep => dep.id !== item.id);
           if (item.parent_id) {
@@ -322,7 +322,7 @@ class DepartmentStore {
         } else Toast.show(resp.msg || '抱歉，删除失败，请刷新页面稍后重试');
       });
     } catch (e) {
-      console.log(e, 'delete dep');
+      console.log(e, 'onDelete dep');
       Toast.show('抱歉，发生未知错误，请刷新页面稍后重试');
     }
     this.deleting = false;
@@ -443,7 +443,7 @@ class DepartmentItem extends React.Component {
                 BizDialog.onOpen('创建部门', <AddDepartment/>);
               }}>创建下属部门</MenuItem>}
               {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('确认删除',
-                <ComfirmDialog submitAction={this.store.delete.bind(null, item)}/>)}>删除</MenuItem>}
+                <ComfirmDialog submitAction={this.store.onDelete.bind(null, item)}/>)}>删除</MenuItem>}
             </IconMenu>
           )}
           primaryText={`${isNested ? '子部门' : '部门'}: ${item.name}`}

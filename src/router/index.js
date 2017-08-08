@@ -4,10 +4,8 @@ import Login from '../views/account/Login';
 import Register from '../views/account/Reg';
 import Dashboard from '../views/Dashboard';
 import {
-  MainDashboard,
-  Analysis,
+  My,
   Partner,
-  Product,
   Search,
 } from '../views/dashboard/index';
 
@@ -28,7 +26,7 @@ const routes = [
     routes: [
       {
         path: '/dashboard/main',
-        component: MainDashboard,
+        component: My,
         exact: true,
       },
       {
@@ -39,14 +37,6 @@ const routes = [
         path: '/dashboard/partner',
         component: Partner,
       },
-      {
-        path: '/dashboard/product',
-        component: Product,
-      },
-      {
-        path: '/dashboard/analysis',
-        component: Analysis,
-      }
     ],
   },
 ];

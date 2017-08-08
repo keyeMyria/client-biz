@@ -178,7 +178,7 @@ class DataList extends React.Component {
         leftIcon = <PartnerIcon />;
         menuItem = isAdmin ? [
           {name: '查看/修改资料', action: partner => BizDialog.onOpen('合作伙伴详情', <AddPartner partner={partner}/>)},
-          {name: '解除合作关系', action: partner => BizDialog.onOpen('确认解除？', <ComfirmDialog submitAction={partnerStore.delete.bind(null, partner)}/>)}
+          {name: '解除合作关系', action: partner => BizDialog.onOpen('确认解除？', <ComfirmDialog submitAction={partnerStore.onDelete.bind(null, partner)}/>)}
         ] : [
           {name: '查看资料', action: partner => BizDialog.onOpen('合作伙伴详情', <AddPartner partner={partner}/>)},
         ];
