@@ -31,12 +31,12 @@ class SearchState {
           this.searchResult = resp.data.head;
         } else {
           this.searchResult = null;
-          Toast.show(resp.msg || '搜索失败');
+          Toast.show(resp.msg || '没有找到该单据');
         }
       });
     } catch (e) {
       console.log(e, 'search fin bill');
-      Toast.show('搜索失败');
+      Toast.show('没有找到该单据');
     }
     this.searching = false;
   }
@@ -52,7 +52,7 @@ export default class SearchBill extends React.PureComponent {
       <div className="board-search">
         <h3>{title}</h3>
         <TextField
-          floatingLabelText="请输入查找的单据号"
+          floatingLabelText="请输入查找的单据号(18位)"
           value={this.store.searchedBillNo}
           type="number"
           onChange={e => this.store.setSearchNo(e.target.value)}
