@@ -21,9 +21,11 @@ import {
 import {BizDialog} from "../../components/Dialog";
 import {ToastStore as Toast} from "../../components/Toast";
 import BillSvc, {CURRENCY} from '../../services/bill';
+import MerchantSvc from '../../services/merchant';
 import Checkbox from 'material-ui/Checkbox';
 import MemberStore from "../stores/merchantMember";
 import AddMaterial from "./AddMaterial";
+import {ProcurementStore} from '../dashboard/procurement/ProcurementBoard';
 
 class AddBillState {
   @observable bill_type = null;
@@ -41,6 +43,7 @@ class AddBillState {
   @observable openMemberListDialog = false;
   @observable openAddItemDialog = false;
   @observable editingMaterial = {};
+  @observable merchantsList = [];
 
   @computed get noticeNameStr() {
     const nameArr = this.notice_list.map(item => item.user_name);
@@ -127,7 +130,7 @@ class AddBillState {
       const tax_flag = parseInt(this.tax_flag, 10);
       const tax_rate = parseFloat(this.tax_rate);
       const notice_list = this.noticeIdStr;
-      const item_list = JSON.stringify(this.item_list.length ? [...this.item_list] : ['null']);
+      const item_list = this.item_list.length ? JSON.stringify([...this.item_list]) : null;
       const priority = this.priority.slice(0, 2).join(',');
       const resp = await BillSvc.create(bill_no, bill_type, relative_mer_id, this.currency, pay_type,
         tax_flag, tax_rate, this.valid_begin_time, this.valid_end_time, notice_list, this.content,
@@ -135,6 +138,7 @@ class AddBillState {
       runInAction('after create bill', () => {
         if (resp.code === '0') {
           Toast.show('创建成功');
+          ProcurementStore.refresh();
           BizDialog.onClose();
         } else Toast.show(resp.msg || '抱歉，创建失败，请稍后重试');
       });
@@ -160,7 +164,19 @@ class AddBillState {
     if (index > -1) {
       this.item_list[index] = item;
     }
-  }
+  };
+  @action getMerchantList = async () => {
+    try {
+      const resp = await MerchantSvc.getMerchantListBySelfInCharge();
+      runInAction('after get merchants', () => {
+        if (resp.code === '0') {
+          this.merchantsList = [...resp.data];
+        } else Toast.show(resp.msg || '抱歉，获取用户负责商户失败，请刷新后重试');
+      });
+    } catch (e) {
+      console.log(e, 'get merchant list by user in charge');
+    }
+  };
 }
 
 @inject('user')
@@ -170,6 +186,7 @@ export default class AddBill extends React.PureComponent {
   currentUser = this.props.user.user.current;
   componentWillMount() {
     MemberStore.load();
+    this.store.getMerchantList();
   }
 
   render() {
@@ -178,13 +195,19 @@ export default class AddBill extends React.PureComponent {
     const followMemberSelection = MemberStore.memberList.filter(member => member.user_id !== this.currentUser.id);
     return (
       <form onSubmit={this.store.submit}>
-        <TextField
-          floatingLabelText="合作商户ID（必填）"
+        <SelectField
+          floatingLabelText={!!this.store.merchantsList.length ? "合作商户ID（必填）" : '请通知管理员分配负责商户'}
+          disabled={!this.store.merchantsList.length}
           value={this.store.relative_mer_id}
-          type="number"
-          onChange={e => this.store.setKey('relative_mer_id', e.target.value)}
           style={{marginRight: 20}}
-        /><br/>
+          onChange={(event, index, val) => this.store.setKey('relative_mer_id', val)}
+        >
+          {this.store.merchantsList.map((item, index) => (
+            <MenuItem value={item.partner_id}
+                      primaryText={`商户：${item.partner_name}`}
+                      key={index}/>
+          ))}
+        </SelectField>
         <SelectField
           floatingLabelText="单据类型（必选）"
           value={this.store.bill_type}

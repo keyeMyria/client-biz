@@ -42,6 +42,11 @@ const getBillList = async (bill_type, page_no, page_size) => {
   return resp.data;
 };
 
+const searchBill = async (keyword, bill_type, page_no, page_size) => {
+  const resp = await axios.post('/bill_gateway/search_bill', {keyword, bill_type, page_no, page_size});
+  return resp.data;
+};
+
 // key 9deb17fa79572cdbe980ff9257009edd7fdb8a50
 const getBillNo = async (key) => {
   const resp = await clientSeq.get(`/inner_seq_gateway/get_sequence_no`, {params: {key}});
@@ -91,4 +96,5 @@ export default {
   sendItem,
   returnItem,
   setNoticeList,
+  searchBill,
 }

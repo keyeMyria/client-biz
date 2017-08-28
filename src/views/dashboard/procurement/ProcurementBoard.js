@@ -11,6 +11,8 @@ import Menu from 'material-ui/Menu';
 import BillSvc from '../../../services/bill';
 import {ToastStore as Toast} from "../../../components/Toast";
 import SearchBill from '../../items/SearchBill';
+import {BizDialog} from '../../../components/Dialog';
+import AddBill from "../../items/AddBill";
 
 class ProcurementBillStore {
   @observable DS = [];
@@ -37,7 +39,7 @@ class ProcurementBillStore {
         if (resp.code === '0' && resp.data.list) {
           this.DS = this.pageNo > 1 ? [...this.DS, ...resp.data.list] : resp.data.list;
           this.recordCount = (resp.data.pagination && resp.data.pagination.record_count) || 0;
-          this.hasMore = this.DS.length < this.recordCount;
+          this.hasMore = !!resp.data.pagination.has_next_page;
           if (this.hasMore) this.pageNo++;
         } else Toast.show(resp.msg || '抱歉，发生未知错误，请检查网络连接稍后重试');
       })
@@ -50,7 +52,7 @@ class ProcurementBillStore {
   };
 }
 
-const ProcurementStore = new ProcurementBillStore();
+export const ProcurementStore = new ProcurementBillStore();
 
 @observer
 export default class ProcurementBoard extends React.PureComponent {
@@ -154,6 +156,7 @@ export default class ProcurementBoard extends React.PureComponent {
   };
   onCopy = () => alert('copy');
   onShare = () => alert('share');
+  addBill = () => BizDialog.onOpen('创建单据', <AddBill />);
 
   render() {
     return (
@@ -180,6 +183,7 @@ export default class ProcurementBoard extends React.PureComponent {
               <MessageItem message={data} isProcurement key={index}/>
             ))}
             <div style={{width: '100%', textAlign: 'right'}}>
+              <FlatButton label="创建" primary onTouchTap={this.addBill}/>
               {this.store.hasMore && <FlatButton label="加载更多" primary onTouchTap={this.store.load}/>}
             </div>
           </div>

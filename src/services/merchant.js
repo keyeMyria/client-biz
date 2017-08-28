@@ -99,8 +99,32 @@ const delUser = async (user_id) => {
   return resp.data;
 };
 
-const quitMerchant = async (mer_id ) => {
+const quitMerchant = async (mer_id) => {
   const resp = await axios.post('/biz_gateway/quit_merchant', {mer_id });
+  return resp.data;
+};
+
+const getMerchantListByUserInCharge = async (user_id) => {
+  const resp = await axios.post('/biz_gateway/query_user_care_partner', {user_id});
+  return resp.data;
+};
+
+const getMerchantListBySelfInCharge = async () => {
+  const resp = await axios.post('/biz_gateway/query_care_partner');
+  return resp.data;
+};
+
+const addUserInChargeMerchant = async (user_id, partner_id) => {
+  const url = typeof partner_id === 'number' ? '/biz_gateway/add_user_care_partner' : '/biz_gateway/batch_add_user_care_partner';
+  const data = typeof partner_id === 'number' ? {user_id, partner_id} : {user_id, partner_id_list: partner_id};
+  const resp = await axios.post(url, data);
+  return resp.data;
+};
+
+const delUserInChargeMerchant = async (user_id, partner_id) => {
+  const url = typeof partner_id === 'number' ? '/biz_gateway/del_user_care_partner' : '/biz_gateway/batch_del_user_care_partner';
+  const data = typeof partner_id === 'number' ? {user_id, partner_id} : {user_id, partner_id_list: partner_id};
+  const resp = await axios.post(url, data);
   return resp.data;
 };
 
@@ -119,4 +143,8 @@ export default {
   getUserListByMerchant,
   delUser,
   quitMerchant,
+  getMerchantListByUserInCharge,
+  getMerchantListBySelfInCharge,
+  addUserInChargeMerchant,
+  delUserInChargeMerchant,
 }

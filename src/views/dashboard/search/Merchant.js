@@ -24,6 +24,7 @@ import {BizDialog, ComfirmDialog} from "../../../components/Dialog";
 import DialogForm from "../../items/DialogForm";
 import MemberStore from "../../stores/merchantMember";
 import UserDetail, {SetDepartment} from '../../items/UserDetail';
+import SetMerchant from '../../items/SetMerchant';
 import Storage from '../../../utils/storage';
 
 export default class MerchantInfo extends React.PureComponent {
@@ -224,6 +225,8 @@ class MemberList extends React.Component {
                   rightIconButton={(
                     <IconMenu iconButtonElement={iconButtonElement}>
                       <MenuItem onTouchTap={() => BizDialog.onOpen('用户资料', <UserDetail user={item}/>)}>查看</MenuItem>
+                      {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('设置用户负责商户',
+                        <SetMerchant user={item}/>)}>设置负责商户</MenuItem>}
                       {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('设置部门',
                         <SetDepartment user={item}/>)}>设置部门</MenuItem>}
                       {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('移出商户',

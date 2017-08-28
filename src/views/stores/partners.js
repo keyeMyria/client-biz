@@ -9,8 +9,8 @@ class Partners {
   @observable hasMore = false;
   @observable pageNo = 1;
   @observable recordCount = 0;
+  @observable landed = false;
   pageSize = 20;
-  landed = false;
 
   @action load = async () => {
     if (this.loading) return;
@@ -22,7 +22,7 @@ class Partners {
         if (resp.code === '0' && resp.data.list) {
           this.DS = this.pageNo > 1 ? [...this.DS, ...resp.data.list] : [...resp.data.list];
           this.recordCount = (resp.data.pagination && resp.data.pagination.record_count) || 0;
-          this.hasMore = this.DS.length < this.recordCount;
+          this.hasMore = !!resp.data.pagination.has_next_page;
           if (this.hasMore) this.pageNo++;
         } else Toast.show(resp.msg);
       })

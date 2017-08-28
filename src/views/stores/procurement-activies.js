@@ -32,7 +32,7 @@ class ProcurementActivitiesStore {
         if (resp.code === '0' && resp.data.list) {
           this.purchaseList = this.pageNo > 1 ? [...this.purchaseList, ...resp.data.list] : [...resp.data.list];
           this.recordCount = (resp.data.pagination && resp.data.pagination.record_count) || 0;
-          this.hasMore = this.purchaseList.length < this.recordCount;
+          this.hasMore = !!resp.data.pagination.has_next_page;
           if (this.hasMore)  this.pageNo++;
         }
       })

@@ -73,9 +73,9 @@ class FinBillStore {
       const resp = await FinancialSvc.getBillList(pageNo, this.pageSize);
       runInAction('after load list', () => {
         if (resp.code === '0' && resp.data) {
-          this.DS = this.pageNo > 1 ? [...this.DS, ...resp.data] : resp.data;
+          this.DS = this.pageNo > 1 ? [...this.DS, ...resp.data.list] : resp.data.list;
           this.recordCount = (resp.data.pagination && resp.data.pagination.record_count) || 0;
-          this.hasMore = this.DS.length < this.recordCount;
+          this.hasMore = !!resp.data.pagination.has_next_page;
           if (this.hasMore) this.pageNo++;
         } else Toast.show(resp.msg || '抱歉，发生未知错误，请检查网络连接稍后重试');
       })
