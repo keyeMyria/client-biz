@@ -125,9 +125,9 @@ class DashboardNav extends React.Component {
           {/*<LinkButton icon='trending_up' text='分析' to="/dashboard/analysis"/>*/}
         </div>
         <div>
-          <button className="btn-link" onClick={this.handleQuickCreate}>
-            <i className="material-icons" style={{fontSize: 30}}>add_circle_outline</i>
-          </button>
+          <div className="btn-link" onClick={this.handleQuickCreate}>
+            <i className="material-icons">add_circle_outline</i>
+          </div>
           <Popover
             open={openQuickCreateMenu}
             anchorEl={quickCreateAnchorEl}

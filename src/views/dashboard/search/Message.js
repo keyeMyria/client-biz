@@ -208,7 +208,7 @@ class MessageList extends React.Component {
       <List className='search-list'>
         <div style={{backgroundColor: '#FFF'}}>
           <Subheader >{headerTxt}</Subheader>
-          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
+          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
           {!DS.length && !loading && <p className="none-data" style={{textAlign: 'center'}}>暂无内容</p>}
           {(DS.length > 0) && <Divider inset={true} />}
         </div>

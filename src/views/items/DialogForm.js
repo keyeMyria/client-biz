@@ -16,6 +16,7 @@ export default class DialogForm extends React.Component {
     const {value, remark} = this.state;
     let onTouchTap = null;
     let showRemark = false;
+    let inputType = 'text';
     switch (type) {
       default: return null;
       case 'invite':
@@ -25,9 +26,11 @@ export default class DialogForm extends React.Component {
       case 'apply':
         onTouchTap = this.submitJoinMerchant;
         showRemark = true;
+        inputType = 'number';
         break;
       case 'switchMerchant':
         onTouchTap = this.switchMerchant;
+        inputType = 'number';
         break;
     }
     return (
@@ -35,7 +38,7 @@ export default class DialogForm extends React.Component {
         <TextField hintText={hintTxt}
                    value={value}
                    style={{marginRight: 20}}
-                   type="text"
+                   type={inputType}
                    onChange={e => this.setState({ value: e.target.value })}/>
         {showRemark && <TextField hintText='添加备注'
                                   value={remark}

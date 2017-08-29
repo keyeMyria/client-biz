@@ -152,7 +152,7 @@ class MerchantList extends React.Component {
       <List className='search-list'>
         <div style={{backgroundColor: '#FFF'}}>
           <Subheader >{`已加入商户列表(当前id: ${currentUser.mer_id})`}</Subheader>
-          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
+          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
           {!(merchantList && merchantList.length) && !loading && (
             <p className="none-data" style={{textAlign: 'center'}}>暂未加入其他商户</p>
           )}
@@ -213,7 +213,7 @@ class MemberList extends React.Component {
       <List className='search-list'>
         <div style={{backgroundColor: '#FFF'}}>
           <Subheader>当前商会成员</Subheader>
-          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
+          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
           {!memberList.length && !loading && <p className="none-data" style={{textAlign: 'center'}}>商户暂无成员</p>}
           {(memberList.length > 0) && <Divider inset={true} />}
         </div>
@@ -407,7 +407,7 @@ class DepartmentList extends React.Component {
       <List className='search-list'>
         <div style={{backgroundColor: '#FFF'}}>
           <Subheader>部门</Subheader>
-          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto 20px auto'}}/>}
+          {loading && !landed && <CircularProgress size={28} style={{display: 'block', margin: '0 auto', paddingBottom: 20}}/>}
           {!departmentList.length && !loading && <p className="none-data" style={{textAlign: 'center'}}>商户暂无部门</p>}
           {(departmentList.length > 0) && <Divider inset={true} />}
         </div>

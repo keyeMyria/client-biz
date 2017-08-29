@@ -102,7 +102,7 @@ export default class Partner extends React.Component {
     const {current} = this.props.user.user;
     const isAdmin = current && (current.is_admin === 1);
     return (
-      <div style={{flex: 1}}>
+      <div className="partner-container">
         <this.TabBar />
         <div className="main-board">
           <DataList type={ListType.PARTNERS} store={partnerStore}/>

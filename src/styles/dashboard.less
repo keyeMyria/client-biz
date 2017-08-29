@@ -1,8 +1,7 @@
 @import "varible";
-@import "~react-big-calendar/lib/css/react-big-calendar.css";
+//@import "~react-big-calendar/lib/css/react-big-calendar.css";
 
 .dashboard {
-  outline: 1px solid red;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -80,6 +79,7 @@ a {
     outline: none;
     background-color: transparent;
     overflow: hidden;
+    cursor: pointer;
     &:hover {
       background-color: rgba(255, 255, 255, .2);
       color: #fff;
@@ -94,6 +94,13 @@ a {
       border-radius: 22px;
       background-color: #64b1ca;
       overflow: hidden;
+    }
+
+    i {
+      display: block;
+      width: 30px;
+      height: 30px;
+      font-size: 30px;
     }
   }
   .btn-setting {
@@ -128,6 +135,7 @@ a {
   flex: 1;
   overflow: hidden;
   background-color: #F8F6F2;
+  height: 100%;
 }
 
 .panel-nav {
@@ -521,6 +529,7 @@ a {
   justify-content: flex-start;
   box-sizing: border-box;
   overflow-y: hidden;
+  height: 100%;
 }
 
 .search-content {
@@ -538,7 +547,7 @@ a {
   .none-data {
     font-size: 14px;
     color: #797979;
-    margin-bottom: 20px;
+    padding-bottom: 20px;
   }
 
   .search-list {
@@ -546,9 +555,9 @@ a {
     max-width: 400px;
     height: 98%;
     margin-right: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+    //display: flex;
+    //flex-direction: column;
+    //justify-content: flex-start;
 
     .list-container {
       overflow-y: auto;
@@ -632,4 +641,9 @@ a {
   max-width: 400px;
   padding-top: 10px;
   box-sizing: border-box;
+}
+
+.partner-container {
+  flex: 1;
+  height: 100%;
 }
