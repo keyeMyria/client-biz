@@ -7,6 +7,7 @@ const TABS = {
   MESSAGE: 1,
   MERCHANT: 2,
   MAIL: 3,
+  MATERIAL: 4,
 };
 
 export default class Search extends React.PureComponent {
@@ -28,6 +29,7 @@ export default class Search extends React.PureComponent {
               style={{flex: 1, margin: '0 20px', maxWidth: 400, minWidth: 200}}
               tabItemContainerStyle={{backgroundColor: '#FFF'}}>
           <Tab label="商户" value={TABS.MERCHANT} style={tabStyle}/>
+          {/*<Tab label="物料" value={TABS.MATERIAL} style={tabStyle}/>*/}
           <Tab label="邮箱" value={TABS.MAIL} style={tabStyle}/>
           <Tab label="通知" value={TABS.MESSAGE} style={tabStyle}/>
         </Tabs>
@@ -42,6 +44,7 @@ export default class Search extends React.PureComponent {
       case TABS.MESSAGE: return <Message />;
       case TABS.MERCHANT: return <Merchant />;
       case TABS.MAIL: return <Mail />;
+      // case TABS.MATERIAL: return <Material />;
     }
   };
 
