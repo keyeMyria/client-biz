@@ -254,7 +254,7 @@ export default class AddBill extends React.PureComponent {
         />}<br/>
         <DatePicker floatingLabelText={`协议有效开始时间${this.store.bill_type === 4 ? '（必填）' : ''}`}
                     onChange={(e, value) => this.store.setKey('valid_begin_time', new Date(value).getTime())}/>
-        <DatePicker floatingLabelText={`协议有效开始时间${this.store.bill_type === 4 ? '（必填）' : ''}`}
+        <DatePicker floatingLabelText={`协议有效结束时间${this.store.bill_type === 4 ? '（必填）' : ''}`}
                     onChange={(e, value) => this.store.setKey('valid_end_time', new Date(value).getTime())}/>
         <TextField
           floatingLabelText={`单据文字内容${(this.store.bill_type === 1 || this.store.bill_type === 4) ? '（必填）' : ''}`}
