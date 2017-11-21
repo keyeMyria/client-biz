@@ -27,6 +27,14 @@ import MemberStore from "../stores/merchantMember";
 import AddMaterial from "./AddMaterial";
 import {ProcurementStore} from '../dashboard/procurement/ProcurementBoard';
 
+const BillType = {
+  Feedback: {value: 1, name: '产能反馈单'},
+  Inquiry: {value: 2, name: '询报价单'},
+  Procurement: {value: 3, name: '采购订单'},
+  Agreement: {value: 4, name: '协议'},
+  Sale: {value: 5, name: '销售订单'},
+};
+
 class AddBillState {
   @observable bill_type = null;
   @observable relative_mer_id = '';
@@ -62,7 +70,7 @@ class AddBillState {
     let itemListValidated = true;
     switch (this.bill_type) {
       default: return false;
-      case 2:
+      case BillType.Inquiry.value:
         termsValidated = !!this.currency && !!this.pay_type && !!this.item_list.length;
         this.item_list.forEach(item => {
           if (!(item.item_code && item.quantity && item.line_no)) {
@@ -70,7 +78,8 @@ class AddBillState {
           }
         });
         return defaultValidated && taxRateValidated && termsValidated && itemListValidated;
-      case 3:
+      case BillType.Procurement.value:
+      case BillType.Sale.value:
         termsValidated = !!this.item_list.length;
         this.item_list.forEach(item => {
           if (!(item.item_code && item.quantity && item.line_no && item.item_name && item.price)) {
@@ -78,10 +87,10 @@ class AddBillState {
           }
         });
         return defaultValidated && taxRateValidated && termsValidated && itemListValidated;
-      case 4:
+      case BillType.Agreement.value:
         termsValidated = !!this.valid_begin_time && !!this.valid_end_time && !!this.content;
         return defaultValidated && termsValidated;
-      case 1:
+      case BillType.Feedback.value:
         termsValidated = !!this.content;
         return defaultValidated && termsValidated;
     }
@@ -127,7 +136,7 @@ class AddBillState {
       const relative_mer_id = parseInt(this.relative_mer_id, 10);
       const bill_type = parseInt(this.bill_type, 10);
       const pay_type = parseInt(this.pay_type, 10);
-      const tax_flag = parseInt(this.tax_flag, 10);
+      const tax_flag = parseInt(`${this.tax_flag}`, 10);
       const tax_rate = parseFloat(this.tax_rate);
       const notice_list = this.noticeIdStr;
       const item_list = this.item_list.length ? JSON.stringify([...this.item_list]) : null;
@@ -181,7 +190,7 @@ class AddBillState {
 
 @inject('user')
 @observer
-export default class AddBill extends React.PureComponent {
+export default class AddBill extends React.Component {
   store = new AddBillState();
   currentUser = this.props.user.user.current;
   componentWillMount() {
@@ -214,13 +223,14 @@ export default class AddBill extends React.PureComponent {
           style={{marginRight: 20}}
           onChange={(event, index, val) => this.store.setKey('bill_type', val)}
         >
-          <MenuItem value={1} primaryText="产能反馈单" />
-          <MenuItem value={2} primaryText="询报价单" />
-          <MenuItem value={3} primaryText="采购订单" />
-          <MenuItem value={4} primaryText="协议" />
+          <MenuItem value={BillType.Feedback.value} primaryText={BillType.Feedback.name} />
+          <MenuItem value={BillType.Inquiry.value} primaryText={BillType.Inquiry.name} />
+          <MenuItem value={BillType.Procurement.value} primaryText={BillType.Procurement.name} />
+          <MenuItem value={BillType.Sale.value} primaryText={BillType.Sale.name} />
+          <MenuItem value={BillType.Agreement.value} primaryText={BillType.Agreement.name} />
         </SelectField>
         <SelectField
-          floatingLabelText={`汇率${this.store.bill_type === 2 ? '（必选）' : ''}`}
+          floatingLabelText={`汇率${this.store.bill_type === BillType.Inquiry.value ? '（必选）' : ''}`}
           value={this.store.currency}
           style={{marginRight: 20}}
           onChange={(event, index, val) => this.store.setKey('currency', val)}
@@ -228,7 +238,7 @@ export default class AddBill extends React.PureComponent {
           {CURRENCY.map((item, index) => <MenuItem value={item.value} primaryText={item.name} key={index}/>)}
         </SelectField>
         <SelectField
-          floatingLabelText={`付款方式${this.store.bill_type === 2 ? '（必选）' : ''}`}
+          floatingLabelText={`付款方式${this.store.bill_type === BillType.Inquiry.value ? '（必选）' : ''}`}
           value={this.store.pay_type}
           style={{marginRight: 20}}
           onChange={(event, index, val) => this.store.setKey('pay_type', val)}
@@ -237,7 +247,7 @@ export default class AddBill extends React.PureComponent {
           <MenuItem value={2} primaryText='月结' />
         </SelectField>
         <SelectField
-          floatingLabelText={`含税标志${this.store.bill_type === 2 ? '（必选）' : ''}`}
+          floatingLabelText={`含税标志${this.store.bill_type === BillType.Inquiry.value ? '（必选）' : ''}`}
           value={this.store.tax_flag}
           style={{marginRight: 20}}
           onChange={(event, index, val) => this.store.setKey('tax_flag', val)}
@@ -252,12 +262,12 @@ export default class AddBill extends React.PureComponent {
           onChange={e => this.store.setKey('tax_rate', e.target.value)}
           style={{marginRight: 20}}
         />}<br/>
-        <DatePicker floatingLabelText={`协议有效开始时间${this.store.bill_type === 4 ? '（必填）' : ''}`}
+        <DatePicker floatingLabelText={`协议有效开始时间${this.store.bill_type === BillType.Agreement.value ? '（必填）' : ''}`}
                     onChange={(e, value) => this.store.setKey('valid_begin_time', new Date(value).getTime())}/>
-        <DatePicker floatingLabelText={`协议有效结束时间${this.store.bill_type === 4 ? '（必填）' : ''}`}
+        <DatePicker floatingLabelText={`协议有效结束时间${this.store.bill_type === BillType.Agreement.value ? '（必填）' : ''}`}
                     onChange={(e, value) => this.store.setKey('valid_end_time', new Date(value).getTime())}/>
         <TextField
-          floatingLabelText={`单据文字内容${(this.store.bill_type === 1 || this.store.bill_type === 4) ? '（必填）' : ''}`}
+          floatingLabelText={`单据文字内容${(this.store.bill_type === BillType.Feedback.value || this.store.bill_type === BillType.Agreement.value) ? '（必填）' : ''}`}
           value={this.store.content}
           type="text"
           multiLine={true}

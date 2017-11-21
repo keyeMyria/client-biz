@@ -76,6 +76,8 @@ export default class Login extends React.Component {
         } else {
           ToastStore.show('登录失败, 请稍后重试');
         }
+      } else if (resp.msg) {
+        ToastStore.show(resp.msg);
       } else {
         ToastStore.show('登录失败, 请稍后重试');
       }

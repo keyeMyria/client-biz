@@ -112,7 +112,7 @@ class MailStore {
 }
 
 @observer
-class AddMail extends React.PureComponent {
+class AddMail extends React.Component {
   store = new MailStore(this.props.mail);
   render() {
     return (

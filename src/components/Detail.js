@@ -338,7 +338,7 @@ class DetailStore {
 export const detailStore = new DetailStore();
 
 @observer
-export class Detail extends React.PureComponent {
+export class Detail extends React.Component {
   store = detailStore;
   componentWillMount() {
     this.store.load(this.props.message);

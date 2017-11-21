@@ -124,7 +124,7 @@ class AddFinancialBillState {
 }
 
 @observer
-export default class AddFinancialBill extends React.PureComponent {
+export default class AddFinancialBill extends React.Component {
   store = new AddFinancialBillState();
 
   get currency() {

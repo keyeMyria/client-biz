@@ -65,7 +65,7 @@ class AddPartnerState {
 
 @inject('user')
 @observer
-class AddPartner extends React.PureComponent {
+class AddPartner extends React.Component {
   store = new AddPartnerState(this.props.partner);
   render() {
     const {partner, user} = this.props;

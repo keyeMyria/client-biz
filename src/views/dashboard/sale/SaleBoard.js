@@ -53,7 +53,7 @@ class SaleBillStore {
 const SaleStore = new SaleBillStore();
 
 @observer
-export default class SaleBoard extends React.PureComponent {
+export default class SaleBoard extends React.Component {
   store = SaleStore;
   state = {openFollowActions: false};
   async componentWillMount() {

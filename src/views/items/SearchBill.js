@@ -54,7 +54,7 @@ class SearchState {
 }
 
 @observer
-export default class SearchBill extends React.PureComponent {
+export default class SearchBill extends React.Component {
   store = new SearchState();
 
   render() {

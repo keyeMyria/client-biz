@@ -7,7 +7,7 @@ import ProcurementActivitiesStore from "../../stores/procurement-activies";
 
 @inject('user')
 @observer
-export default class ProcurementBox extends React.PureComponent {
+export default class ProcurementBox extends React.Component {
   store = ProcurementActivitiesStore;
   state = {
     messagesFilterValue: 0,

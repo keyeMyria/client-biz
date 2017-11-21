@@ -30,7 +30,7 @@ class DrawerState {
 export const DrawerStore = new DrawerState();
 
 @observer
-export default class DetailDrawer extends React.PureComponent {
+export default class DetailDrawer extends React.Component {
   store = DrawerStore;
   onRequestChange = () => {
     if (detailStore.shouldSaveBill) {

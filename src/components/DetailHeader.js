@@ -30,7 +30,7 @@ import AddFinancialBill from '../views/items/AddFinancialBill';
 
 @inject('user')
 @observer
-export class DetailHeader extends React.PureComponent {
+export class DetailHeader extends React.Component {
   store = detailStore;
 
   constructor(props) {
@@ -399,7 +399,7 @@ export class DetailHeader extends React.PureComponent {
         <RadioButtonGroup name="tax-radios" defaultSelected={this.store.tax_flag} className="tax-radios">
           {/*onChange={(e, v) => this.store.setKey('tax_flag', v)}*/}
           <RadioButton value={1} label="含税" disabled iconStyle={{marginRight: 5}} labelStyle={{color: '#999', fontSize: 12}} style={{}}/>
-          <RadioButton value={0} label="不含税" disabled iconStyle={{marginRight: 5}} labelStyle={{color: '#999', fontSize: 12}} style={{marginLeft: -50}}/>
+          <RadioButton value={0} label="不含税" disabled iconStyle={{marginRight: 5}} labelStyle={{color: '#999', fontSize: 12}} style={{}}/>
         </RadioButtonGroup>
         <div className="bill-price flex-row">
           <p className="price-txt">总价：{`${head.amount}`.replace(/\d{1,3}(?=(\d{3})+$)/g,function(s){ return s+',' })}</p>

@@ -10,12 +10,17 @@ import DatePicker from 'material-ui/DatePicker';
 import {ToastStore as Toast} from "../../components/Toast";
 import { IndustIdList } from "./indust_id_list";
 
+export const MerchantType = {
+  Enterprise: 0,
+  Personal: 1,
+}
+
 @inject('user')
 @observer
 export default class AddMerchant extends React.Component {
   state = {
     mer_name: '',
-    type: 0,
+    type: MerchantType.Enterprise,
     indust_id: '',
     org_code: '',
     representative: '',
@@ -45,10 +50,10 @@ export default class AddMerchant extends React.Component {
     const { mer_name, type, indust_id, org_code, representative, establish_date } = this.state;
     let allLengthChecked = false;
     switch (type) {
-      case 0:
+      case MerchantType.Enterprise:
         allLengthChecked = this.hasLength(mer_name, indust_id, org_code, representative) && (!!establish_date);
         break;
-      case 1:
+      case MerchantType.Personal:
         allLengthChecked = this.hasLength(mer_name, indust_id);
         break;
       default: break;
@@ -79,12 +84,12 @@ export default class AddMerchant extends React.Component {
   };
   checkOrgCode = () => {
     let err = {org_code: ''};
-    if (this.state.type === 0 && !this.state.org_code.trim().length) err = {org_code: '组织机构代码为空'};
+    if (this.state.type === MerchantType.Enterprise && !this.state.org_code.trim().length) err = {org_code: '组织机构代码为空'};
     this.setError(err);
   };
   checkRepresentative = () => {
     let err = {representative: ''};
-    if (this.state.type === 0 && !this.state.representative.trim().length) err = {representative: '法人代表不能为空'};
+    if (this.state.type === MerchantType.Enterprise && !this.state.representative.trim().length) err = {representative: '法人代表不能为空'};
     this.setError(err);
   };
   setError = (err) => {
@@ -128,7 +133,7 @@ export default class AddMerchant extends React.Component {
               style={{marginRight: 20}}
               className="login-input" />
             <TextField
-              hintText={type === 0 ? "法人代表" : '法人代表 (选填)'}
+              hintText={type === MerchantType.Enterprise ? "法人代表" : '法人代表 (选填)'}
               value={representative}
               type="text"
               onBlur={this.checkRepresentative}
@@ -143,8 +148,8 @@ export default class AddMerchant extends React.Component {
               className="login-input"
               onChange={(event, index, type) => this.setState({ type })}
             >
-              <MenuItem value={1} primaryText="个人" />
-              <MenuItem value={0} primaryText="企业" />
+              <MenuItem value={MerchantType.Personal} primaryText="个人" />
+              <MenuItem value={MerchantType.Enterprise} primaryText="企业" />
             </SelectField>
             <SelectField
               floatingLabelText="行业类型"
@@ -157,7 +162,7 @@ export default class AddMerchant extends React.Component {
               }
             </SelectField>
             <TextField
-              hintText={type === 0 ? "组织机构代码" : '组织机构代码 (选填)'}
+              hintText={type === MerchantType.Enterprise ? "组织机构代码" : '组织机构代码 (选填)'}
               value={org_code}
               type="text"
               onBlur={this.checkOrgCode}

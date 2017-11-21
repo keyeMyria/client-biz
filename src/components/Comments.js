@@ -55,7 +55,7 @@ class CommentStore {
 }
 
 @observer
-export class Comments extends React.PureComponent {
+export class Comments extends React.Component {
   store = new CommentStore();
   static styles = {
     smallIcon: {

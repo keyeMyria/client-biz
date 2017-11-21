@@ -71,7 +71,7 @@ class ManageBillItemState {
 }
 
 @observer
-class ManageBillItem extends React.PureComponent {
+class ManageBillItem extends React.Component {
   store = new ManageBillItemState();
   billStore = detailStore;
   render() {

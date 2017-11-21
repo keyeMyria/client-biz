@@ -68,7 +68,7 @@ const PriorityType = {
 };
 
 @observer
-class MessageItem extends React.PureComponent {
+class MessageItem extends React.Component {
   getTagStyle = tag => {
     const {IMPORTENT, VERY_IMPORTENT, HURRY, VERY_HURRY} = PriorityType;
     let color = null;

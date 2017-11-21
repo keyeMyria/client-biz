@@ -55,7 +55,7 @@ class ProcurementBillStore {
 export const ProcurementStore = new ProcurementBillStore();
 
 @observer
-export default class ProcurementBoard extends React.PureComponent {
+export default class ProcurementBoard extends React.Component {
   store = ProcurementStore;
   state = {openFollowActions: false};
   async componentWillMount() {

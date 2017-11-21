@@ -175,7 +175,7 @@ class DrawerState {
 export const FinancialDrawer = new DrawerState();
 
 @observer
-export default class FinancialDetail extends React.PureComponent {
+export default class FinancialDetail extends React.Component {
   store = FinancialDrawer;
 
   static styles = {
