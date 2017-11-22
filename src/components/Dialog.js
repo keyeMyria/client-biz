@@ -37,7 +37,7 @@ export const DialogComponent = observer(() => (
   </Dialog>
 ));
 
-export const ComfirmDialog = ({submitAction}) => (
+export const ConfirmDialog = ({submitAction}) => (
   <div>
     <RaisedButton label="确定" primary={true} style={{width: '40%', marginRight: '15%'}}
                   onTouchTap={() => {

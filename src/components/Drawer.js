@@ -4,7 +4,7 @@ import { observer } from 'mobx-react';
 import Drawer from 'material-ui/Drawer';
 import {Detail} from './Detail';
 import{detailStore} from "./Detail";
-import {BizDialog, ComfirmDialog} from "./Dialog"
+import {BizDialog, ConfirmDialog} from "./Dialog"
 
 class DrawerState {
   @observable open = false;
@@ -34,7 +34,7 @@ export default class DetailDrawer extends React.Component {
   store = DrawerStore;
   onRequestChange = () => {
     if (detailStore.shouldSaveBill) {
-      BizDialog.onOpen('是否不保存改动直接退出？', <ComfirmDialog submitAction={this.store.onClose}/>);
+      BizDialog.onOpen('是否不保存改动直接退出？', <ConfirmDialog submitAction={this.store.onClose}/>);
       return;
     }
     this.store.onClose();

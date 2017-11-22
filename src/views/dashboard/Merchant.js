@@ -9,7 +9,7 @@ const TABS = {
   MAIL: 3,
 };
 
-export default class Search extends React.PureComponent {
+export default class MerchantPanel extends React.PureComponent {
   state={
     tabValue: TABS.MERCHANT,
   };
@@ -22,7 +22,7 @@ export default class Search extends React.PureComponent {
       <div className="panel-nav">
         <a className="title" style={{boxSizing: 'border-box', paddingRight: 10}}>
           <FontIcon className="material-icons" color="#333">dashboard</FontIcon>
-          <span>我的查询</span>
+          <span>我的商户</span>
         </a>
         <Tabs onChange={this.handleTabsChange} value={tabValue}
               style={{flex: 1, margin: '0 20px', maxWidth: 400, minWidth: 200}}

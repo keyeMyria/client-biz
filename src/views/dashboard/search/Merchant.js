@@ -20,7 +20,7 @@ import TextField from 'material-ui/TextField';
 import CircularProgress from 'material-ui/CircularProgress';
 import FlatButton from 'material-ui/FlatButton';
 import {ToastStore as Toast} from "../../../components/Toast";
-import {BizDialog, ComfirmDialog} from "../../../components/Dialog";
+import {BizDialog, ConfirmDialog} from "../../../components/Dialog";
 import DialogForm from "../../items/DialogForm";
 import MemberStore from "../../stores/merchantMember";
 import UserDetail, {SetDepartment} from '../../items/UserDetail';
@@ -169,7 +169,7 @@ class MerchantList extends React.Component {
                         <MenuItem onTouchTap={this.switchMerchant.bind(null, item.mer_id)}>切换至该商户</MenuItem>
                       )}
                       <MenuItem onTouchTap={() => BizDialog.onOpen('确认退出',
-                        <ComfirmDialog submitAction={quitMerchant.bind(null, item, this.props.user.getUser)}/>)}>退出该商户</MenuItem>
+                        <ConfirmDialog submitAction={quitMerchant.bind(null, item, this.props.user.getUser)}/>)}>退出该商户</MenuItem>
                     </IconMenu>
                   )}
                   primaryText={item.username || `商户: ${item.mer_name}`}
@@ -230,7 +230,7 @@ class MemberList extends React.Component {
                       {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('设置部门',
                         <SetDepartment user={item}/>)}>设置部门</MenuItem>}
                       {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('移出商户',
-                        <ComfirmDialog submitAction={this.store.onDelete.bind(null, item)}/>)}>移出商户</MenuItem>}
+                        <ConfirmDialog submitAction={this.store.onDelete.bind(null, item)}/>)}>移出商户</MenuItem>}
                     </IconMenu>
                   )}
                   primaryText={item.username || `用户名: ${item.user_name}`}
@@ -446,7 +446,7 @@ class DepartmentItem extends React.Component {
                 BizDialog.onOpen('创建部门', <AddDepartment/>);
               }}>创建下属部门</MenuItem>}
               {isAdmin && <MenuItem onTouchTap={() => BizDialog.onOpen('确认删除',
-                <ComfirmDialog submitAction={this.store.onDelete.bind(null, item)}/>)}>删除</MenuItem>}
+                <ConfirmDialog submitAction={this.store.onDelete.bind(null, item)}/>)}>删除</MenuItem>}
             </IconMenu>
           )}
           primaryText={`${isNested ? '子部门' : '部门'}: ${item.name}`}

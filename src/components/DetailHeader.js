@@ -21,7 +21,7 @@ import {
 } from 'material-ui/Table';
 import AddMail from "../views/items/AddMail";
 import AddMaterial from "../views/items/AddMaterial";
-import {BizDialog, ComfirmDialog} from "./Dialog";
+import {BizDialog, ConfirmDialog} from "./Dialog";
 import {CURRENCY} from "../services/bill";
 import {detailStore} from "./Detail";
 import MemberStore from "../views/stores/merchantMember";
@@ -91,7 +91,7 @@ export class DetailHeader extends React.Component {
   onAddNote = () => alert('add note');
   onClose = () => {
     if (this.store.shouldSaveBill) {
-      BizDialog.onOpen('未保存修改，是否直接退出？', <ComfirmDialog submitAction={() => {
+      BizDialog.onOpen('未保存修改，是否直接退出？', <ConfirmDialog submitAction={() => {
         BizDialog.onClose();
         this.props.onClose();
       }}/>)

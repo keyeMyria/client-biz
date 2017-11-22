@@ -18,7 +18,7 @@ import {
 import Dialog from 'material-ui/Dialog';
 import RaisedButton from 'material-ui/RaisedButton';
 import Checkbox from 'material-ui/Checkbox';
-import {BizDialog, ComfirmDialog} from "../../../components/Dialog";
+import {BizDialog, ConfirmDialog} from "../../../components/Dialog";
 import FinancialSvc from '../../../services/financialBill';
 import {ToastStore as Toast} from "../../../components/Toast";
 import {CURRENCY} from "../../../services/bill";
@@ -195,7 +195,7 @@ export default class FinancialDetail extends React.Component {
 
   onRequestChange = () => {
     if (this.store.needSaveChange) {
-      BizDialog.onOpen('是否不保存改动直接退出？', <ComfirmDialog submitAction={this.store.onClose}/>);
+      BizDialog.onOpen('是否不保存改动直接退出？', <ConfirmDialog submitAction={this.store.onClose}/>);
       return;
     }
     this.store.onClose();
