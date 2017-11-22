@@ -24,6 +24,7 @@ import BillSvc, {CURRENCY} from '../../services/bill';
 import MerchantSvc from '../../services/merchant';
 import Checkbox from 'material-ui/Checkbox';
 import MemberStore from "../stores/merchantMember";
+import MaterialsStore from '../stores/materials';
 import AddMaterial from "./AddMaterial";
 import TotalMaterials from '../dashboard/materials/List';
 import {ProcurementStore} from '../dashboard/procurement/ProcurementBoard';
@@ -179,6 +180,7 @@ class AddBillState {
     const index = this.item_list.findIndex(r => r.item_id === item.item_id);
     if (index > -1) {
       this.item_list[index] = item;
+      MaterialsStore.refresh();
     }
   };
   @action getMerchantList = async () => {

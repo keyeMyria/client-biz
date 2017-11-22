@@ -36,6 +36,11 @@ class MaterialStore {
     this.loading = false;
     this.landed = true;
   }
+  @action refresh = () => {
+    this.pageNo = 1;
+    this.hasMore = false;
+    this.load();
+  }
   @action closeMemberDialog = () => this.openMemberListDialog = false;
   @action openMemberDialog = () => this.openMemberListDialog = true;
   @action openItemDialog = item => {
