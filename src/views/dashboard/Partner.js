@@ -8,21 +8,26 @@ import Subheader from 'material-ui/Subheader';
 import {grey400} from 'material-ui/styles/colors';
 import IconButton from 'material-ui/IconButton';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import SearchIcon from 'material-ui/svg-icons/action/search';
 import IconMenu from 'material-ui/IconMenu';
 import MenuItem from 'material-ui/MenuItem';
 import MailIcon from 'material-ui/svg-icons/content/mail';
 import PartnerIcon from 'material-ui/svg-icons/social/group';
 import CircularProgress from 'material-ui/CircularProgress';
 import FlatButton from 'material-ui/FlatButton';
+import RaisedButton from 'material-ui/RaisedButton';
+import TextField from 'material-ui/TextField';
 import {ToastStore as Toast} from "../../components/Toast";
 import PartnerSvc from "../../services/partner";
-import {BizDialog, ComfirmDialog} from "../../components/Dialog";
+import MerchantSvc from '../../services/merchant';
+import {BizDialog, ConfirmDialog} from "../../components/Dialog";
 import AddPartner from "../items/AddPartner";
-import partnerStore from '../stores/partners';
+import partnerStore, {InChargeStore} from '../stores/partners';
 
 const ListType = {
   PARTNERS: 0,
   INVITE: 1,
+  IN_CHARGE: 2,
 };
 
 class Invitations {
@@ -95,30 +100,64 @@ class Invitations {
 
 const InvitationStore = new Invitations();
 
+const PartnerPanel = {
+  List: 'list',
+  Search: 'search',
+};
+
 @inject('user')
 @observer
 export default class Partner extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {panel: PartnerPanel.List};
+  }
   render() {
+    const {panel} = this.state;
+    const isList = panel === PartnerPanel.List;
     const {current} = this.props.user.user;
     const isAdmin = current && (current.is_admin === 1);
     return (
       <div className="partner-container">
         <this.TabBar />
-        <div className="main-board">
-          <DataList type={ListType.PARTNERS} store={partnerStore}/>
-          {isAdmin && <DataList type={ListType.INVITE} store={InvitationStore}/>}
-        </div>
+        {isList ? (
+          <div className="main-board">
+            <DataList type={ListType.PARTNERS} store={partnerStore}/>
+            <DataList type={ListType.IN_CHARGE} store={InChargeStore}/>
+            {isAdmin && <DataList type={ListType.INVITE} store={InvitationStore}/>}
+          </div>
+        ) : (
+          <div className="main-board">
+            <Search title='查询商户'/>
+          </div>
+        )}
       </div>
     );
   }
-  TabBar = () => (
-    <div className="panel-nav">
-      <a className="title" style={{boxSizing: 'border-box', paddingRight: 10}}>
-        <FontIcon className="material-icons" color="#333">dashboard</FontIcon>
-        <span>合作伙伴</span>
-      </a>
-    </div>
-  );
+  TabBar = () => {
+    const {current} = this.props.user.user;
+    const isAdmin = current && (current.is_admin === 1);
+    return (
+      <div className="panel-nav flex-start">
+        <a className="title" style={{boxSizing: 'border-box', paddingRight: 10}}>
+          <FontIcon className="material-icons" color="#333">dashboard</FontIcon>
+          <span>合作伙伴</span>
+        </a>
+        {isAdmin && (
+          <FlatButton
+            label={this.state.panel === PartnerPanel.List ? '查询' : '列表'}
+            primary={true}
+            onTouchTap={this.switchPanel}
+          />
+        )}
+      </div>
+    )
+  };
+  switchPanel = () => {
+    let {panel} = this.state;
+    panel = panel === PartnerPanel.List ? PartnerPanel.Search : PartnerPanel.List;
+    this.setState({panel})
+  }
 }
 
 const iconButtonElement = (
@@ -165,7 +204,6 @@ class DataList extends React.Component {
     const isAdmin = currentUser && (currentUser.is_admin === 1);
     let headerTxt = '';
     let messageA = '';
-    let primaryTxtTip = '';
     let noDataTxt = '';
     let leftIcon = null;
     let menuItem = [];
@@ -174,11 +212,10 @@ class DataList extends React.Component {
       case ListType.PARTNERS:
         headerTxt = '合作伙伴';
         noDataTxt = '暂无合作伙伴';
-        primaryTxtTip = '商户名（内部）';
         leftIcon = <PartnerIcon />;
         menuItem = isAdmin ? [
           {name: '查看/修改资料', action: partner => BizDialog.onOpen('合作伙伴详情', <AddPartner partner={partner}/>)},
-          {name: '解除合作关系', action: partner => BizDialog.onOpen('确认解除？', <ComfirmDialog submitAction={partnerStore.onDelete.bind(null, partner)}/>)}
+          {name: '解除合作关系', action: partner => BizDialog.onOpen('确认解除？', <ConfirmDialog submitAction={partnerStore.onDelete.bind(null, partner)}/>)}
         ] : [
           {name: '查看资料', action: partner => BizDialog.onOpen('合作伙伴详情', <AddPartner partner={partner}/>)},
         ];
@@ -187,15 +224,23 @@ class DataList extends React.Component {
         headerTxt = '伙伴申请';
         noDataTxt = '暂无申请';
         messageA = '申请成为合作伙伴';
-        primaryTxtTip = '商户(ID)';
         leftIcon = <MailIcon />;
         menuItem = [
           {name: '同意', action: InvitationStore.accept},
           {name: '拒绝', action: InvitationStore.refuse}
         ];
         break;
+      case ListType.IN_CHARGE:
+        headerTxt = '我负责的商户';
+        noDataTxt = '暂无负责商户';
+        leftIcon = <PartnerIcon />;
+        menuItem = [
+          {name: '查看资料', action: partner => BizDialog.onOpen('合作伙伴详情', <AddPartner partner={partner}/>)},
+        ];
+        break;
     }
     const isInvite = type === ListType.INVITE;
+    const isPartnerList = type === ListType.PARTNERS;
     return (
       <List style={{width: 400, marginRight: 10}}>
         <div style={{backgroundColor: '#FFF'}}>
@@ -215,20 +260,15 @@ class DataList extends React.Component {
                       {menuItem.map((menu, key) => <MenuItem onTouchTap={menu.action.bind(null, item)} key={key}>{menu.name}</MenuItem>)}
                     </IconMenu>
                   )}
-                  primaryText={`${primaryTxtTip}: ${isInvite ? item.src_mer_id : item.inner_partner_name}`}
-                  secondaryText={
-                    <p>
-                      <span>{isInvite ? messageA : `伙伴标识：${getPartnerFlag(item.partner_flag)}`}</span><br />
-                      {isInvite ? item.create_time : `伙伴类型：${getPartnerType(item.partner_type)}`}
-                    </p>
-                  }
+                  primaryText={this.getPrimaryText(type, item)}
+                  secondaryText={this.getSecondaryText(type, item)}
                   secondaryTextLines={2}
                 />
                 {((DS.length - 1) !== index) && <Divider inset={true} />}
               </div>
             ))
           }
-          {!isInvite && (
+          {isPartnerList && (
             <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
               {(isAdmin || hasMore) && <Divider inset={true} />}
               {isAdmin && <FlatButton label="添加合作伙伴" primary={true} onTouchTap={this.handleAddPartner}/>}
@@ -238,5 +278,100 @@ class DataList extends React.Component {
         </div>
       </List>
     );
+  }
+  getPrimaryText = (type, data) => {
+    switch (type) {
+      default: return '';
+      case ListType.INVITE: return `商户(ID): ${data.src_mer_id}`;
+      case ListType.PARTNERS: return `商户名(内部): ${data.inner_partner_name}`;
+      case ListType.IN_CHARGE: return `商户: ${data.partner_name} (ID: ${data.partner_id})`;
+    }
+  }
+  getSecondaryText = (type, data) => {
+    switch (type) {
+      default: return '';
+      case ListType.INVITE: return (<p><span>申请成为合作伙伴</span><br/>{data.create_time}</p>);
+      case ListType.PARTNERS: return (
+        <p>
+          <span>{`伙伴标识：${!!data.partner_flag ? getPartnerFlag(data.partner_flag) : '暂无'}`}</span>
+          <br/>
+          {`伙伴类型：${!!data.partner_type ? getPartnerType(data.partner_type) : '暂无'}`}
+        </p>
+      );
+      case ListType.IN_CHARGE: return (
+        <p>
+          <span>{`伙伴标识：${!!data.partner_flag ? getPartnerFlag(data.partner_flag) : '暂无'}`}</span>
+          <br/>
+          {`伙伴类型：${!!data.partner_type ? getPartnerType(data.partner_type) : '暂无'}`}
+        </p>
+      );
+    }
+  }
+}
+
+class SearchState {
+  @observable keyword = '';
+  @observable searchResult = [];
+  @observable searching = false;
+
+  @computed get searchValidated() {
+    return !!this.keyword;
+  }
+
+  @action input = val => this.keyword = val;
+
+  @action search = async () => {
+    if (this.searching || !this.searchValidated) return;
+    this.searching = true;
+    try {
+      const resp = await MerchantSvc.searchMerchant(this.keyword);
+      runInAction('after search', () => {
+        if (resp.code === '0' && resp.data.length) {
+          Toast.show('搜索成功');
+          this.searchResult = resp.data;
+        } else {
+          this.searchResult = [];
+          Toast.show(resp.msg || '没有找到相关商户');
+        }
+      });
+    } catch (e) {
+      console.log(e, 'search merchant');
+      Toast.show('没有找到相关商户');
+    }
+    this.searching = false;
+  }
+}
+
+@observer
+class Search extends React.Component {
+  store = new SearchState();
+
+  render() {
+    const {title} = this.props;
+    return (
+      <form className="board-search" onSubmit={this.handleSubmit} style={{maxWidth: 400}}>
+        <h3>{title}</h3>
+        <TextField
+          floatingLabelText="请输入查找的关键字"
+          value={this.store.keyword}
+          type="text"
+          onChange={e => this.store.input(e.target.value)}
+          style={{marginRight: 20}}
+        />
+        <RaisedButton label="查找" primary={this.store.searchValidated} icon={<SearchIcon />}
+                      disabled={!this.store.searchValidated} onTouchTap={this.store.search}/>
+        <br/>
+        {this.store.searching && <CircularProgress size={28} style={{display: 'block', margin: '20px auto'}}/>}
+        <div style={{width: 400, marginTop: 20}}>
+          {!!this.store.searchResult.length && this.store.searchResult.map((item, index) => (
+            <div>{index}</div>
+          ))}
+        </div>
+      </form>
+    );
+  }
+  handleSubmit = (e) => {
+    e.preventDefault();
+    this.store.search();
   }
 }

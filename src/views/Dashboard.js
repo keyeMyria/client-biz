@@ -119,9 +119,9 @@ class DashboardNav extends React.Component {
         <div>
           <p className="logo">Biz</p>
           <LinkButton icon='dashboard' text='我的' to="/dashboard/main"/>
-          <LinkButton icon='search' text='查询' to="/dashboard/search"/>
+          <LinkButton icon='local_mall' text='商户' to="/dashboard/merchant"/>
           <LinkButton icon='person' text='伙伴' to="/dashboard/partner"/>
-          {/*<LinkButton icon='archive' text='产品' to="/dashboard/product"/>*/}
+          <LinkButton icon='archive' text='物料' to="/dashboard/materials"/>
           {/*<LinkButton icon='trending_up' text='分析' to="/dashboard/analysis"/>*/}
         </div>
         <div>

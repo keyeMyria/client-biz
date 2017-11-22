@@ -25,6 +25,7 @@ import MerchantSvc from '../../services/merchant';
 import Checkbox from 'material-ui/Checkbox';
 import MemberStore from "../stores/merchantMember";
 import AddMaterial from "./AddMaterial";
+import TotalMaterials from '../dashboard/materials/List';
 import {ProcurementStore} from '../dashboard/procurement/ProcurementBoard';
 
 const BillType = {
@@ -166,7 +167,13 @@ class AddBillState {
     }
   };
 
-  @action addMaterialItem = item => this.item_list = [...this.item_list, item];
+  @action addMaterialItem = item => {
+    if (item instanceof Array) {
+      this.item_list = item;
+    } else {
+      this.item_list = [item];
+    }
+  }
   @action deleteMaterialItem = item => this.item_list = this.item_list.filter(raw => raw.item_id !== item.item_id);
   @action updateMaterialItem = item => {
     const index = this.item_list.findIndex(r => r.item_id === item.item_id);
@@ -193,12 +200,17 @@ class AddBillState {
 export default class AddBill extends React.Component {
   store = new AddBillState();
   currentUser = this.props.user.user.current;
+  constructor(props) {
+    super(props);
+    this.state = {showSelectItem: false, selectedItems: []}
+  }
   componentWillMount() {
     MemberStore.load();
     this.store.getMerchantList();
   }
 
   render() {
+    const {selectedItems} = this.state;
     const followArray = [...this.store.notice_list];
     const tableRowStyle = {padding: 0};
     const followMemberSelection = MemberStore.memberList.filter(member => member.user_id !== this.currentUser.id);
@@ -338,6 +350,7 @@ export default class AddBill extends React.Component {
                   </button>
                   <button className="btn-material-action" onClick={e => {
                     e.preventDefault();
+                    this.setState({selectedItems: selectedItems.filter(i => i.item_id !== item.item_id)});
                     this.store.deleteMaterialItem(item);
                   }}>
                     删除
@@ -348,7 +361,7 @@ export default class AddBill extends React.Component {
           </TableBody>
         </Table>
         <div style={{textAlign: 'right'}}>
-          <FloatingActionButton mini={true} style={{marginTop: 20}} onTouchTap={this.store.openItemDialog.bind(null, null)}>
+          <FloatingActionButton mini={true} style={{marginTop: 20}} onTouchTap={this.openSelectItem}>
             <ContentAdd />
           </FloatingActionButton>
         </div>
@@ -394,11 +407,32 @@ export default class AddBill extends React.Component {
           open={this.store.openAddItemDialog}
           onRequestClose={this.store.closeItemDialog}>
           <AddMaterial material={this.store.editingMaterial}
-                       onAdd={this.store.addMaterialItem}
+                       isBill={true}
                        onUpdate={this.store.updateMaterialItem}
                        onclose={this.store.closeItemDialog}/>
+        </Dialog>
+        <Dialog
+          title={(
+            <div className='dialog-title-wrapper'>
+              <span>选择物料</span>
+              <RaisedButton label="确定" primary={true} onClick={this.setBillItems} />
+            </div>
+          )}
+          titleStyle={{fontSize: 18}}
+          modal={false}
+          autoScrollBodyContent
+          open={this.state.showSelectItem}
+          onRequestClose={this.closeSelectItem}>
+          <TotalMaterials isDialog={true} onRowSelection={this.onRowSelection} selected={this.state.selectedItems}/>
         </Dialog>
       </form>
     )
   }
+  closeSelectItem = () => this.setState({showSelectItem: false});
+  openSelectItem = () => this.setState({showSelectItem: true});
+  setBillItems = () => {
+    this.store.addMaterialItem(this.state.selectedItems);
+    this.closeSelectItem();
+  }
+  onRowSelection = (items) => this.setState({selectedItems: items});
 }

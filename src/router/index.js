@@ -6,7 +6,8 @@ import Dashboard from '../views/Dashboard';
 import {
   My,
   Partner,
-  Search,
+  Merchant,
+  Materials,
 } from '../views/dashboard/index';
 
 const routes = [
@@ -30,13 +31,17 @@ const routes = [
         exact: true,
       },
       {
-        path: '/dashboard/search',
-        component: Search,
+        path: '/dashboard/merchant',
+        component: Merchant,
       },
       {
         path: '/dashboard/partner',
         component: Partner,
       },
+      {
+        path: '/dashboard/materials',
+        component: Materials,
+      }
     ],
   },
 ];

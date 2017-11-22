@@ -41,24 +41,23 @@ const updateDepartment = async (id, name, parent_id, remark) => {
   return resp.data;
 };
 
-const addItem = async (item_name, line_no, item_code, item_spec, unit, price, quantity, deliver_time) => {
-  const resp = await axios.post('/base_gateway/add_item', {item_name, line_no, item_code, item_spec, unit, price,
-    quantity, deliver_time});
+const addItem = async (item_name, item_code, item_spec, unit, price) => {
+  const resp = await axios.post('/base_gateway/add_item', {item_name, item_code, item_spec, unit, price});
   return resp.data;
 };
 
-const updateItem = async (item_id, item_name, line_no, item_code, item_spec, unit, price, quantity) => {
-  const resp = await axios.post('/base_gateway/update_item', {item_id, item_name, line_no, item_code, item_spec, unit, price, quantity});
+const updateItem = async (item_id, item_name, item_code, item_spec, unit, price) => {
+  const resp = await axios.post('/base_gateway/update_item', {item_id, item_name, item_code, item_spec, unit, price});
   return resp.data;
 };
 
-const delItem = async (id) => {
-  const resp = await axios.post('/base_gateway/del_item', {id});
+const delItem = async (item_id) => {
+  const resp = await axios.post('/base_gateway/del_item', {item_id});
   return resp.data;
 };
 
-const getItemList = async (id) => {
-  const resp = await axios.post('/base_gateway/batch_query_item', {id});
+const getItemList = async (page_no, page_size) => {
+  const resp = await axios.post('/base_gateway/batch_query_item', {page_no, page_size});
   return resp.data;
 };
 

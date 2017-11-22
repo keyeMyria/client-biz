@@ -1,9 +1,11 @@
 import My from './My';
 import Partner from './Partner';
-import Search from './Search';
+import Merchant from './Merchant';
+import Materials from './materials';
 
 export {
   My,
   Partner,
-  Search,
+  Merchant,
+  Materials,
 }

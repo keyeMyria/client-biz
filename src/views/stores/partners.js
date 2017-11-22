@@ -1,7 +1,8 @@
-import {observable, action, runInAction} from 'mobx';
+import {observable, action, runInAction, computed} from 'mobx';
 import {ToastStore as Toast} from "../../components/Toast";
 import BaseSvc from "../../services/baseData";
 import {BizDialog} from "../../components/Dialog";
+import PartnerSvc from '../../services/partner';
 
 class Partners {
   @observable DS = [];
@@ -60,3 +61,33 @@ class Partners {
 }
 
 export default new Partners();
+
+class InChargeMerchantStore {
+  @observable rawDS = [];
+  @observable loading = false;
+  @observable landed = false;
+
+  @computed get DS() {
+    return this.rawDS;
+  }
+
+  @action load = async () => {
+    if (this.loading) return;
+    this.loading = true;
+    try {
+      const resp = await PartnerSvc.getInChargeMerchants();
+      runInAction('after load invite', () => {
+        if (resp.code === '0' && resp.data) {
+          this.rawDS = resp.data;
+        } else Toast.show(resp.msg);
+      })
+    } catch (e) {
+      console.log(e, 'load partner invite');
+      Toast.show('抱歉，发生未知错误，请检查网络连接稍后重试');
+    }
+    this.loading = false;
+    if (!this.landed) this.landed = true;
+  };
+}
+
+export const InChargeStore = new InChargeMerchantStore();

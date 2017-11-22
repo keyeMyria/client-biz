@@ -11,6 +11,8 @@ import Menu from 'material-ui/Menu';
 import BillSvc from '../../../services/bill';
 import {ToastStore as Toast} from "../../../components/Toast";
 import SearchBill from '../../items/SearchBill';
+import AddBill from "../../items/AddBill";
+import {BizDialog} from '../../../components/Dialog';
 
 class SaleBillStore {
   @observable DS = [];
@@ -151,6 +153,7 @@ export default class SaleBoard extends React.Component {
   };
   onCopy = () => alert('copy');
   onShare = () => alert('share');
+  addBill = () => BizDialog.onOpen('创建单据', <AddBill />);
 
   render() {
     return (
@@ -176,6 +179,7 @@ export default class SaleBoard extends React.Component {
               <MessageItem message={data} key={index}/>
             ))}
             <div style={{width: '100%', textAlign: 'right'}}>
+              <FlatButton label="创建" primary onTouchTap={this.addBill}/>
               {this.store.hasMore && <FlatButton label="加载更多" primary onTouchTap={this.store.load}/>}
             </div>
           </div>

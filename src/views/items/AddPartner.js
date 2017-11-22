@@ -10,7 +10,7 @@ import {BizDialog} from "../../components/Dialog";
 import {ToastStore as Toast} from "../../components/Toast";
 import BaseSvc from '../../services/baseData';
 import PartnerSvc from '../../services/partner';
-import partnerStore from '../stores/partners';
+import partnerStore, {InChargeStore} from '../stores/partners';
 
 class AddPartnerState {
   @observable partner_id = '';
@@ -50,7 +50,10 @@ class AddPartnerState {
       runInAction('after submit add', () => {
         if (resp.code === '0') {
           Toast.show(type === this.submitType.ADD ? '已发送合作申请，请等待或通知对方确认' : '修改成功');
-          if (type !== this.submitType.ADD) partnerStore.refresh();
+          if (type !== this.submitType.ADD) {
+            partnerStore.refresh();
+            InChargeStore.load();
+          }
           BizDialog.onClose();
         }
         else Toast.show(resp.msg || '抱歉，操作失败，请稍后重试');
@@ -100,7 +103,7 @@ class AddPartner extends React.Component {
         >
           <MenuItem value='CUSTOMER' primaryText="客户" />
           <MenuItem value='SUPPLIER' primaryText="供应商" />
-          <MenuItem value='CUSTOMER,SUPPLIER' primaryText="客户,供应商" />
+          <MenuItem value='CUSTOMER,SUPPLIER' primaryText="客户 / 供应商" />
           <MenuItem value={null} primaryText="" />
         </SelectField>
         <SelectField
@@ -163,12 +166,25 @@ class AddPartner extends React.Component {
           type="number"
           readOnly={!!partner}
           onChange={e => this.store.setKey('partner_id', e.target.value)}
-          style={{marginRight: 20}}
+          style={{marginRight: 20, top: -15}}
         />
+        <SelectField
+          floatingLabelText="合作伙伴标识（选填）"
+          value={this.store.partner_flag}
+          disabled={!isAdmin}
+          style={{marginRight: 20}}
+          onChange={(event, index, val) => this.store.setKey('partner_flag', val)}
+        >
+          <MenuItem value='CUSTOMER' primaryText="客户" />
+          <MenuItem value='SUPPLIER' primaryText="供应商" />
+          <MenuItem value='CUSTOMER,SUPPLIER' primaryText="客户 / 供应商" />
+          <MenuItem value={null} primaryText="" />
+        </SelectField>
         <div style={{textAlign: 'right'}}>
           <RaisedButton style={{ marginTop: 20 }} label={this.store.submitting ? null : submitTxt}
                         icon={this.store.submitting ? <CircularProgress size={28}/> : null}
-                        primary={!!this.store.partner_id} disabled={!this.store.partner_id}
+                        primary={!!this.store.partner_id}
+                        disabled={!this.store.partner_id}
                         onClick={this.store.submit.bind(null, submitType)} />
           <RaisedButton style={{ marginTop: 20, marginLeft: 20 }} label="取消"
                         primary={false} onClick={BizDialog.onClose} />

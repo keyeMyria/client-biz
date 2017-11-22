@@ -128,6 +128,11 @@ const delUserInChargeMerchant = async (user_id, partner_id) => {
   return resp.data;
 };
 
+const searchMerchant = async (keyword) => {
+  const resp = await axios.post('/base_gateway/search_merchant', {keyword});
+  return resp.data;
+};
+
 export default {
   createMerchant,
   applyMerchant,
@@ -147,4 +152,5 @@ export default {
   getMerchantListBySelfInCharge,
   addUserInChargeMerchant,
   delUserInChargeMerchant,
+  searchMerchant,
 }
