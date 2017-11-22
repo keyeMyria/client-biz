@@ -25,7 +25,7 @@ export default class TotalMaterials extends React.Component {
     return (
       <div className={isDialog ? '' : 'materials-wrapper'}>
         <Table multiSelectable={true} onRowSelection={this.onRowSelection}>
-          <TableHeader displaySelectAll={false} adjustForCheckbox={isDialog}>
+          <TableHeader displaySelectAll={false} adjustForCheckbox={!!isDialog}>
             <TableRow>
               <TableHeaderColumn style={{padding: 20, width: 50}}>ID</TableHeaderColumn>
               <TableHeaderColumn style={{...tableRowStyle, width: 80}}>自定义编码</TableHeaderColumn>
