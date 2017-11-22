@@ -5,8 +5,15 @@ import FontIcon from 'material-ui/FontIcon';
 import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
 import CircularProgress from 'material-ui/CircularProgress';
+import SelectField from 'material-ui/SelectField';
+import MenuItem from 'material-ui/MenuItem';
 import {accountService} from "../../services/account";
 import Toast, {ToastStore} from "../../components/Toast";
+
+const AccountType = {
+  MOBILE: 'mobile',
+  MAIL: 'mail',
+}
 
 @inject('user')
 @observer
@@ -21,6 +28,7 @@ export default class Register extends React.Component {
       password: '',
     },
     submitting: false,
+    type: AccountType.MOBILE,
   };
   get validated() {
     const {account, username, password} = this.state;
@@ -45,17 +53,53 @@ export default class Register extends React.Component {
   };
 
   checkAccount = () => {
-    const {account} = this.state;
+    const {account, type} = this.state;
+    const regMail = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
     const error = {...this.state.error, account: ''};
     if (!(account.trim() || account)) {
       error.account = '账号不能为空';
-    } else if(account.trim().length < 1) {
-      error.account = '账号不能少于1个字';
+    } else if ((type === AccountType.MAIL) && !regMail.test(account)) {
+      error.account = '请使用有效的邮箱地址'
+    } else if ((type === AccountType.MOBILE) && account.length !== 11) {
+      error.account = '请使用有效的手机号'
     } else {
-      if (this.state.error.account.length) this.setState({ error });
+      if (this.state.error.account.length) this.setState({error});
+      // if (!error.account.length) {
+      //   if (type === AccountType.MOBILE) {
+      //     this.onReqCheckMobile(account);
+      //   } else {
+      //     this.onReqCheckMail(account);
+      //   }
+      // }
       return;
     }
-    this.setState({ error });
+    this.setState({error});
+  };
+
+  onReqCheckMail = async () => {
+    const {account, error} = this.state;
+    try {
+      const resp = await accountService.checkMail(account);
+      if (resp.code !== 0) {
+        error.account = resp.msg || '';
+        this.setState({error});
+      }
+    } catch (e) {
+      console.log(e, 'on req check mail');
+    }
+  };
+
+  onReqCheckMobile = async () => {
+    const {account, error} = this.state;
+    try {
+      const resp = await accountService.checkMobile(account);
+      if (resp.code !== 0) {
+        error.account = resp.msg || '';
+        this.setState({error});
+      }
+    } catch (e) {
+      console.log(e, 'on req check mobile');
+    }
   };
 
   checkPassword = () => {
@@ -99,7 +143,7 @@ export default class Register extends React.Component {
   };
 
   render() {
-    const { account, username, password, error, submitting } = this.state;
+    const { account, username, password, error, submitting, type } = this.state;
     return (
       <div className="layout register-view">
         <div className="title">
@@ -109,15 +153,28 @@ export default class Register extends React.Component {
         <div className="card">
           <h4>注册</h4>
           <from onSubmit={this.register} className="form-login">
-            <TextField
-              hintText="请输入注册账号"
-              value={account}
-              type="text"
-              onBlur={this.checkAccount}
-              onChange={e => this.setState({ account: e.target.value })}
-              errorText={error.account}
-              style={{marginTop: 20}}
-              className="login-input"/>
+            <div style={{position: 'relative', overflow: 'visible'}}>
+              <TextField
+                hintText={`请输入${type === AccountType.MAIL ? '邮箱地址' : '手机号'}`}
+                value={account}
+                type={type === AccountType.MAIL ? 'email' : 'number'}
+                onBlur={this.checkAccount}
+                onChange={e => this.setState({ account: e.target.value })}
+                errorText={error.account}
+                style={{marginTop: 20, display: 'inline-block'}}
+                className="login-input"/>
+              <SelectField
+                floatingLabelText="账号类型"
+                value={type}
+                underlineStyle={{borderBottom: 'none'}}
+                labelStyle={{fontSize: 14, color: '#3c7bd6'}}
+                style={{width: 120, position: 'absolute', right: -125}}
+                onChange={this.handleTypeChange}
+              >
+                <MenuItem value={AccountType.MOBILE} primaryText="手机号" />
+                <MenuItem value={AccountType.MAIL} primaryText="邮箱" />
+              </SelectField>
+            </div>
             <TextField
               hintText="请输入用户名"
               value={username}
@@ -125,7 +182,8 @@ export default class Register extends React.Component {
               onBlur={this.checkName}
               onChange={e => this.setState({ username: e.target.value })}
               errorText={error.username}
-              className="login-input"/>
+              className="login-input username"/>
+            {/*<p style={{fontSize: 12, color: '#999'}}>（提示：请使用真实姓名，让同事和商业伙伴能找到您）</p>*/}
             <TextField
               hintText="请输入密码"
               value={password}
@@ -146,4 +204,5 @@ export default class Register extends React.Component {
       </div>
     );
   }
+  handleTypeChange = (event, index, type) => this.setState({type, account: ''});
 }

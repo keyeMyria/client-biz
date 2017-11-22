@@ -65,6 +65,20 @@
   .login-input {
     width: 30%;
     margin-bottom: 20px;
+    position: relative;
+
+    &.username {
+      &::before {
+        content: '(请使用真实姓名，让同事和商业伙伴能找到您)';
+        display: block;
+        position: absolute;
+        top: -10px;
+        left: 0;
+        color: #999;
+        opacity: .6;
+        font-size: 12px;
+      }
+    }
   }
 
   .actions {

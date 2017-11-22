@@ -20,9 +20,21 @@ const refreshToken = async (refresh_token) => {
   return resp.data;
 };
 
+const checkMobile = async (mobile) => {
+  const resp = await axios.post('/user_gateway/check_mobile', {mobile});
+  return resp.data;
+};
+
+const checkMail = async (email) => {
+  const resp = await axios.post('/user_gateway/check_email', {email});
+  return resp.data;
+};
+
 export const accountService = {
   login,
   register,
   getProfile,
   refreshToken,
+  checkMobile,
+  checkMail,
 };
