@@ -114,6 +114,15 @@ class DashboardNav extends React.Component {
       {name: "加入商户", action: this.handleOpenJoinMerchantDialog},
       {name: "创建商户", action: this.handleOpenCreateMerchantDialog},
     ];
+    let displayName = '我';
+    if (currentUser && currentUser.name) {
+      const isAlphaAndNumber = /^[A-Za-z0-9]+$/;
+      if (isAlphaAndNumber.test(currentUser.name)) {
+        displayName = currentUser.name.slice(0, 4);
+      } else {
+        displayName = currentUser.name.slice(-2);
+      }
+    }
     return (
       <nav className="board-nav">
         <div>
@@ -144,7 +153,7 @@ class DashboardNav extends React.Component {
           </Popover>
           <div className="btn-setting">
             <div className="btn-link">
-              <span className="display-name">{(currentUser && currentUser.name.slice(0, 2))}</span>
+              <span className="display-name">{displayName}</span>
             </div>
             <div className="popover-menu">
               <RaisedButton label="查看个人资料" style={{width: 150}} onTouchTap={this.handleOpenProfileDialog}/>

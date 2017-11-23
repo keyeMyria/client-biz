@@ -68,7 +68,7 @@ export default class TotalMaterials extends React.Component {
           </TableBody>
         </Table>
         {(!this.store.loading && !this.store.itemList.length && this.store.landed) && (
-          <p className='none-data'>暂无物料</p>
+          <p style={{fontSize: 14, color: '#797979', textAlign: 'center', margin: '20px auto'}}>暂无物料</p>
         )}
         {this.store.loading && <CircularProgress style={{display: 'block', margin: '20px auto'}}/>}
         {this.store.hasMore && (

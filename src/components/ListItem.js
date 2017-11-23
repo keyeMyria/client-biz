@@ -44,6 +44,7 @@ export class MessageItem extends React.PureComponent {
       case 2: return '询报价单';
       case 3: return isProcurement ? '采购订单' : '销售订单';
       case 4: return '协议';
+      case 5: return '销售订单';
     }
   }
   get sourceMerchant() {

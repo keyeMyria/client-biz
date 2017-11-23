@@ -107,6 +107,8 @@ export default class AddMerchant extends React.Component {
         Toast.show('创建成功');
         const profileResp = await accountService.getProfile(this.props.token);
         this.props.user.update(profileResp.data);
+      } else {
+        Toast.show(resp.msg || '创建失败，请检查网络后重试');
       }
       this.props.close();
     } catch (e) {
