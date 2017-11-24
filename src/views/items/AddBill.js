@@ -410,6 +410,7 @@ export default class AddBill extends React.Component {
           onRequestClose={this.store.closeItemDialog}>
           <AddMaterial material={this.store.editingMaterial}
                        isBill={true}
+                       items={this.store.item_list}
                        onUpdate={this.store.updateMaterialItem}
                        onclose={this.store.closeItemDialog}/>
         </Dialog>
@@ -433,8 +434,23 @@ export default class AddBill extends React.Component {
   closeSelectItem = () => this.setState({showSelectItem: false});
   openSelectItem = () => this.setState({showSelectItem: true});
   setBillItems = () => {
-    this.store.addMaterialItem(this.state.selectedItems);
+    const {selectedItems} = this.state;
+    selectedItems.forEach((item, index) => {
+      if (!item.line_no) {
+        item.line_no = checkedRepeated((index + 1) * 10, this.store.item_list);
+      }
+    });
+    this.store.addMaterialItem(selectedItems);
     this.closeSelectItem();
   }
   onRowSelection = (items) => this.setState({selectedItems: items});
+}
+
+const checkedRepeated = (line_no, items) => {
+  const isRepeated = items.findIndex(i => i.line_no === line_no) > -1;
+  if (isRepeated) {
+    line_no += 10;
+    return checkedRepeated(line_no, items);
+  }
+  return line_no;
 }

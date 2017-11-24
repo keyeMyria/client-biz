@@ -132,13 +132,25 @@ class AddMaterialState {
   };
 }
 
+const checkedRepeated = (line_no, items) => {
+  const isRepeated = items.findIndex(i => i.line_no === line_no) > -1;
+  if (isRepeated) {
+    line_no += 10;
+    return checkedRepeated(line_no, items);
+  }
+  return line_no;
+}
+
 @observer
 class AddMaterial extends React.Component {
   constructor(props) {
     super(props);
-    const {material, isBill, isBillEdit} = props;
+    const {material, isBill, isBillEdit, items} = props;
     material.isBill = !!isBill;
     material.isBillEdit = !!isBillEdit;
+    if (!material.line_no && items && items.length >= 0) {
+      material.line_no = checkedRepeated((items.length + 1) * 10, items);
+    }
     this.store = new AddMaterialState(material);
   }
   render() {
