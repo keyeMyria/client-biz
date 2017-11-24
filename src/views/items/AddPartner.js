@@ -25,6 +25,9 @@ class AddPartnerState {
   constructor(partner = {}) {
     this.partner_id = partner.partner_id || '';
     this.partner_flag = partner.partner_flag;
+    if (partner.partner_flag instanceof Array) {
+      this.partner_flag = partner.partner_flag.join(',');
+    }
     this.partner_type = (partner.partner_type && partner.partner_type.split(',')) || [];
     this.inner_partner_id = partner.inner_partner_id || '';
     this.inner_partner_name = partner.inner_partner_name || '';
@@ -159,7 +162,7 @@ class AddPartner extends React.Component {
         </div>
       </form>
     ) : (
-      <form>
+      <form onSubmit={this.onSubmit}>
         <TextField
           floatingLabelText="合作商户ID"
           value={this.store.partner_id}
@@ -191,6 +194,12 @@ class AddPartner extends React.Component {
         </div>
       </form>
     )
+  }
+  onSubmit = (e) => {
+    e.preventDefault();
+    if (!this.store.partner_id) return;
+    const submitType = this.props.partner ? this.store.submitType.MODIFY : this.store.submitType.ADD;
+    this.store.submit(submitType);
   }
 }
 

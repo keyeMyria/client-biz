@@ -113,8 +113,6 @@ export default class SetMerchant extends React.Component {
     if (!this.partners.DS.length) this.partners.load();
   }
   render() {
-    // const {user} = this.props;
-    console.log(this.partners.DS.length, this.partners.landed);
     return (
       <form>
         {!this.partners.landed && this.partners.loading && (

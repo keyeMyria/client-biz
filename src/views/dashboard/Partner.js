@@ -180,12 +180,19 @@ const getPartnerType = type => {
 };
 
 const getPartnerFlag = flag => {
-  switch (flag) {
-    case 'CUSTOMER': return '客户';
-    case 'SUPPLIER': return '供应商';
-    case 'CUSTOMER,SUPPLIER': return '客户、供应商';
-    default: return '未设定';
+  if (typeof flag === 'string') {
+    switch (flag) {
+      case 'CUSTOMER': return '客户';
+      case 'SUPPLIER': return '供应商';
+      case 'CUSTOMER,SUPPLIER': return '客户、供应商';
+      default: return '';
+    }
   }
+  if (flag instanceof Array) {
+    const formatFlag = flag.map(raw => getPartnerFlag(raw));
+    return formatFlag.join(',');
+  }
+  return '未设定';
 };
 
 @inject('user')
@@ -303,7 +310,7 @@ class DataList extends React.Component {
         <p>
           <span>{`伙伴标识：${!!data.partner_flag ? getPartnerFlag(data.partner_flag) : '暂无'}`}</span>
           <br/>
-          {`伙伴类型：${!!data.partner_type ? getPartnerType(data.partner_type) : '暂无'}`}
+          {`联系方式：${data.tel || '暂无'}`}
         </p>
       );
     }
