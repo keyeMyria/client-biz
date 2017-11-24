@@ -86,10 +86,10 @@ export default class TotalMaterials extends React.Component {
             })}
           </TableBody>
         </Table>
-        {(!this.store.loading && !this.store.itemList.length && this.store.landed) && (
+        {(!this.store.loading && !this.store.itemList.length && this.store.landed && !isDialog) && (
           <p style={{fontSize: 14, color: '#797979', textAlign: 'center', margin: '20px auto'}}>暂无物料</p>
         )}
-        {(disableLength === this.store.itemList.length) && (
+        {(disableLength === this.store.itemList.length && isDialog) && (
           <p style={{fontSize: 14, color: '#797979', textAlign: 'center', margin: '20px auto'}}>暂无可添加物料</p>
         )}
         {this.store.loading && <CircularProgress style={{display: 'block', margin: '20px auto'}}/>}
