@@ -271,8 +271,12 @@ class DetailStore {
     this.updating = true;
     try {
       const {head} = this.detail;
+      let priority = this.priority;
+      if (this.priority instanceof Array) {
+        priority = this.priority.join(',');
+      }
       const resp = await BillSvc.update(head.bill_no, this.pay_type, this.valid_begin_time,
-        this.valid_end_time, this.priority, this.item_list);
+        this.valid_end_time, priority, this.item_list);
       runInAction('after update bill', () => {
         if (resp.code === '0') {
           Toast.show('保存成功');

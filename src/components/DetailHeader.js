@@ -241,7 +241,7 @@ export class DetailHeader extends React.Component {
                             onTouchTap={confirm_status ? this.cancelConfirmBill : this.confirmBill}/>
                   <MenuItem primaryText="订单退货"
                             onTouchTap={this.openManageBillDialog.bind(null, '订单退货')}/>
-                  {this.store.detail.head.bill_type === 3 && (
+                  {(this.store.detail.head.bill_type === 3 || this.store.detail.head.bill_type === 5) && (
                     <MenuItem primaryText="创建结算单" onTouchTap={this.openAddFinBillDialog}/>
                   )}
                   {/*<MenuItem primaryText="已发货" />*/}
@@ -255,7 +255,7 @@ export class DetailHeader extends React.Component {
                             onTouchTap={confirm_status ? this.cancelConfirmBill : this.confirmBill}/>
                   <MenuItem primaryText="订单发货"
                             onTouchTap={this.openManageBillDialog.bind(null, '订单发货')}/>
-                  {this.store.detail.head.bill_type === 3 && (
+                  {(this.store.detail.head.bill_type === 3 || this.store.detail.head.bill_type === 5) && (
                     <MenuItem primaryText="创建结算单" onTouchTap={this.openAddFinBillDialog}/>
                   )}
                   {/*<MenuItem primaryText="生成框架协议" />*/}

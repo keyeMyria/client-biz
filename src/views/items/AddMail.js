@@ -49,7 +49,6 @@ class MailStore {
     try {
       const priority = this.priority.join(',');
       let resp = null;
-      console.log(this.id);
       if (this.id) {
         resp = await MailSvc.sendByDraft(this.id, this.title, this.content, this.receiverId, priority);
       } else {
