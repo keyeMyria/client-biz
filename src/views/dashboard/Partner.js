@@ -9,6 +9,7 @@ import {grey400} from 'material-ui/styles/colors';
 import IconButton from 'material-ui/IconButton';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import SearchIcon from 'material-ui/svg-icons/action/search';
+import MerchantIcon from 'material-ui/svg-icons/maps/local-mall';
 import IconMenu from 'material-ui/IconMenu';
 import MenuItem from 'material-ui/MenuItem';
 import MailIcon from 'material-ui/svg-icons/content/mail';
@@ -328,7 +329,7 @@ class SearchState {
       runInAction('after search', () => {
         if (resp.code === '0' && resp.data.length) {
           Toast.show('搜索成功');
-          this.searchResult = resp.data;
+          this.searchResult = [...resp.data];
         } else {
           this.searchResult = [];
           Toast.show(resp.msg || '没有找到相关商户');
@@ -349,7 +350,7 @@ class Search extends React.Component {
   render() {
     const {title} = this.props;
     return (
-      <form className="board-search" onSubmit={this.handleSubmit} style={{maxWidth: 400}}>
+      <form className="board-search" onSubmit={this.handleSubmit} style={{maxWidth: 400, height: '90%', overflowY: 'auto'}}>
         <h3>{title}</h3>
         <TextField
           floatingLabelText="请输入查找的关键字"
@@ -364,7 +365,20 @@ class Search extends React.Component {
         {this.store.searching && <CircularProgress size={28} style={{display: 'block', margin: '20px auto'}}/>}
         <div style={{width: 400, marginTop: 20}}>
           {!!this.store.searchResult.length && this.store.searchResult.map((item, index) => (
-            <div>{index}</div>
+            <div key={index} style={{backgroundColor: '#FFF'}}>
+              <ListItem
+                leftIcon={<MerchantIcon/>}
+                // rightIconButton={(
+                //   <IconMenu iconButtonElement={iconButtonElement}>
+                //     <MenuItem onTouchTap={() => null}>邀请合作</MenuItem>
+                //   </IconMenu>
+                // )}
+                primaryText={`商户名: ${item.mer_name}`}
+                secondaryText={`id: ${item.mer_id}`}
+                secondaryTextLines={1}
+              />
+              {((this.store.searchResult.length - 1) !== index) && <Divider inset={true} />}
+            </div>
           ))}
         </div>
       </form>

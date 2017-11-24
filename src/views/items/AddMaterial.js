@@ -21,9 +21,12 @@ class AddMaterialState {
   @observable submitType = this.SubmitType.ADD;
   id = null;
   isBill = false;
+  isBillEdit = false;
+  material = {};
 
   constructor(material) {
     if (!material) material = {};
+    this.material = {...material};
     this.name = material.item_name || '';
     this.line_no = material.line_no || '';
     this.item_code = material.item_code || '';
@@ -35,6 +38,7 @@ class AddMaterialState {
     this.deliver_time = material.deliver_time || null;
     this.submitType = material.item_id ? this.SubmitType.MODIFY : this.SubmitType.ADD;
     this.isBill = material.isBill;
+    this.isBillEdit = material.isBillEdit;
   }
 
   SubmitType = {
@@ -60,7 +64,6 @@ class AddMaterialState {
     this.submitting = true;
     try {
       const price = parseFloat(`${this.price}`);
-      // item_name, item_code, item_spec, unit, price
       const resp = await BaseSvc.addItem(this.name, this.item_code, this.item_spec, this.unit, price);
       runInAction('after submit add', () => {
         if (resp.code === '0') {
@@ -83,6 +86,18 @@ class AddMaterialState {
   };
 
   @action update = async (onCloseCallback, onAddCallback, onUpdateCallback) => {
+    if (this.isBillEdit) {
+      const material = {
+        ...this.material,
+        amount: this.quantity * this.price,
+        quantity: this.quantity,
+        line_no: this.line_no,
+        deliver_time: this.deliver_time,
+      };
+      onUpdateCallback && onUpdateCallback(material);
+      onCloseCallback && onCloseCallback();
+      return;
+    }
     if (this.submitting || !this.validated) return;
     this.submitting = true;
     try {
@@ -102,6 +117,7 @@ class AddMaterialState {
             data.data[0].line_no = this.line_no;
             data.data[0].quantity = this.quantity;
             data.data[0].deliver_time = this.deliver_time;
+            data.data[0].amount = this.quantity * this.price;
           }
           onUpdateCallback(data.data[0]);
           Toast.show('修改成功');
@@ -120,29 +136,34 @@ class AddMaterialState {
 class AddMaterial extends React.Component {
   constructor(props) {
     super(props);
-    const {material, isBill} = props;
-    material.isBill = isBill;
+    const {material, isBill, isBillEdit} = props;
+    material.isBill = !!isBill;
+    material.isBillEdit = !!isBillEdit;
     this.store = new AddMaterialState(material);
   }
   render() {
-    const {material, onDel, isBill} = this.props;
+    const {material, onDel, isBill, isBillEdit} = this.props;
     const submitTxt = (material && material.item_id) ? '修改' : '创建';
     const submitAction = (material && material.item_id) ? this.store.update : this.store.submit;
     return (
       <form onSubmit={submitAction}>
         <TextField floatingLabelText="物料名称"
+                   disabled={!!isBillEdit}
                    value={this.store.name} style={{marginRight: 20}}
                    onChange={(e, value) => this.store.setKey('name', value)}/>
         <TextField floatingLabelText="自定义物料编码"
+                   disabled={!!isBillEdit}
                    value={this.store.item_code} style={{marginRight: 20}}
                    onChange={(e, value) => this.store.setKey('item_code', value)}/>
         {isBill && (
           <TextField floatingLabelText="行号（10的整数倍数）"
                      type="number"
+                     disabled={!!isBillEdit}
                      value={this.store.line_no} style={{marginRight: 20}}
                      onChange={(e, value) => this.store.setKey('line_no', value ? parseInt(value, 10) : '')}/>
         )}
         <TextField floatingLabelText="规格备注"
+                   disabled={!!isBillEdit}
                    value={this.store.item_spec} style={{marginRight: 20}}
                    onChange={(e, value) => this.store.setKey('item_spec', value)}/>
         {isBill && (
@@ -152,6 +173,7 @@ class AddMaterial extends React.Component {
                      onChange={(e, value) => this.store.setKey('quantity', value ? parseFloat(value) : '')}/>
         )}
         <TextField floatingLabelText="单位"
+                   disabled={!!isBillEdit}
                    value={this.store.unit} style={{marginRight: 20}}
                    onChange={(e, value) => this.store.setKey('unit', value)}/>
         <TextField floatingLabelText="单价"
@@ -160,6 +182,7 @@ class AddMaterial extends React.Component {
                    onChange={(e, value) => this.store.setKey('price', value ? parseFloat(value).toFixed(2) : '')}/>
         {isBill && (
           <TextField floatingLabelText="金额" readOnly style={{marginRight: 20}}
+                     disabled={!!isBillEdit}
                      value={((this.store.quantity || 0) * (this.store.price || 0)).toFixed(2)}/>
         )}
         {(isBill && this.store.deliver_time) && (

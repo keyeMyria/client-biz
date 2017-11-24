@@ -27,6 +27,9 @@ import {detailStore} from "./Detail";
 import MemberStore from "../views/stores/merchantMember";
 import ManageBillItem from "../views/items/ManageBillItem";
 import AddFinancialBill from '../views/items/AddFinancialBill';
+import TotalMaterials from '../views/dashboard/materials/List';
+import {formatTime} from '../utils/time';
+import {ToastStore as Toast} from './Toast';
 
 @inject('user')
 @observer
@@ -38,6 +41,9 @@ export class DetailHeader extends React.Component {
     this.state = {
       openFollowActions: false,
       openMemberListDialog: false,
+      showSelectItem: false,
+      selectedItems: this.store.item_list,
+      billItemsChanged: false,
     };
   }
 
@@ -407,22 +413,27 @@ export class DetailHeader extends React.Component {
           <div/>
         </div>
         <this.GoodsTable />
-        {
-          !isProcurement && !this.store.lockModifyBill && (
-            <button onClick={() => {this.store.openItemDialog()}}
-                    className="btn-add-goods" style={{marginLeft: 10}}>
-              <FontIcon className="material-icons" color="#333" style={{fontSize: 16}}>add_circle_outline</FontIcon>
-            </button>
-          )
-        }
+        {/*{*/}
+          {/*!isProcurement && !this.store.lockModifyBill && (*/}
+            {/*<button onClick={this.openSelectItem}*/}
+                    {/*className="btn-add-goods" style={{marginLeft: 10}}>*/}
+              {/*<FontIcon className="material-icons" color="#333" style={{fontSize: 16}}>add_circle_outline</FontIcon>*/}
+            {/*</button>*/}
+          {/*)*/}
+        {/*}*/}
       </div>
     );
   });
 
   onCellClick = (row,column) => {
+    if (this.store.detail.isProcurement) Toast.show('只有供应商可以修改物料行');
     if (this.store.detail.isProcurement || this.store.lockModifyBill) return;
     if (column > -1) {
-      const itemConfirmed = (this.store.item_list[row].relative_confirm_status === 1) || (this.store.item_list[row].confirm_status === 1);
+      const selfConfirmed = this.store.item_list[row].confirm_status === 1;
+      const relativeConfirmed = this.store.item_list[row].relative_confirm_status === 1;
+      const itemConfirmed = relativeConfirmed || selfConfirmed;
+      if (selfConfirmed) Toast.show('请取消物料确认状态再进行修改操作');
+      if (relativeConfirmed) Toast.show('对方已确认物料，如需修改请通知对方');
       if (!itemConfirmed) this.store.openItemDialog(this.store.item_list[row]);
     }
   };
@@ -525,7 +536,7 @@ export class DetailHeader extends React.Component {
               <TableRowColumn style={{...styles.noPadding, width: 70}}>
                 <div className="expend-tab-row"
                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onCellClick(index, !detail.isProcurement ? 9 : 8);}}>
-                  <p>{(item.deliver_time && item.deliver_time.split(' ')[0]) || '暂无'}</p>
+                  <p>{this.formatDeliverTime(item.deliver_time) || '暂无'}</p>
                 </div>
               </TableRowColumn>
             </TableRow>
@@ -534,6 +545,14 @@ export class DetailHeader extends React.Component {
       </Table>
     );
   });
+
+  formatDeliverTime = (deliver_time) => {
+    if (!deliver_time) return undefined;
+    if (typeof deliver_time === 'number') {
+      return formatTime(deliver_time, 'YYYY-MM-DD').slice(5, 10);
+    }
+    return deliver_time.slice(5, 10);
+  }
 
   render() {
     const {isMail} = this.props;
@@ -549,12 +568,58 @@ export class DetailHeader extends React.Component {
           open={this.store.openEditItemDialog}
           onRequestClose={this.store.closeItemDialog}>
           <AddMaterial material={this.store.editingMaterial}
-                       onDel={this.store.deleteMaterialItem}
-                       onAdd={this.store.addMaterialItem}
+                       // onDel={this.deleteMaterialItem}
+                       isBill={true}
+                       isBillEdit={true}
                        onUpdate={this.store.updateMaterialItem}
                        onclose={this.store.closeItemDialog}/>
         </Dialog>
+        <Dialog
+          title={(
+            <div className='dialog-title-wrapper'>
+              <span>选择物料</span>
+              <RaisedButton label="确定" primary={true} onClick={this.setBillItems} />
+            </div>
+          )}
+          titleStyle={{fontSize: 18}}
+          modal={false}
+          autoScrollBodyContent
+          open={this.state.showSelectItem}
+          onRequestClose={this.closeSelectItem}>
+          <TotalMaterials
+            isDialog={true}
+            onRowSelection={this.onAddRowSelection}
+            selected={this.state.selectedItems}
+            confirmedItems={this.store.comfirmedItems.map(index => this.store.item_list[index])}
+          />
+        </Dialog>
       </div>
     );
+  }
+  deleteMaterialItem = (item) => {
+    let {selectedItems} = this.state;
+    selectedItems = selectedItems.filter(raw => raw.item_id !== item.item_id);
+    this.setState({selectedItems});
+    this.store.deleteMaterialItem(item);
+  }
+  closeSelectItem = () => this.setState({showSelectItem: false});
+  openSelectItem = () => this.setState({showSelectItem: true});
+  setBillItems = () => {
+    if (this.state.billItemsChanged) {
+      let {selectedItems} = this.state;
+      selectedItems = selectedItems.map(item => {
+        const index = this.store.item_list.findIndex(i => i.item_id === item.item_id);
+        // 若id一样，使用现有单据物料数据，更新物料数据源
+        if (index > -1) {
+          return this.store.item_list[index];
+        }
+        return item;
+      });
+      this.store.addMaterialItem(selectedItems);
+    }
+    this.closeSelectItem();
+  }
+  onAddRowSelection = (items) => {
+    this.setState({selectedItems: items, billItemsChanged: true});
   }
 }

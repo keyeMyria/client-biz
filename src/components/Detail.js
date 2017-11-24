@@ -81,7 +81,13 @@ class DetailStore {
   };
 
   @action addMaterialItem = item => {
-    this.item_list = [...this.item_list, item];
+    const confirmItems = this.comfirmedItems.map(index => this.item_list[index]);
+    if (item instanceof Array) {
+      this.item_list = [...confirmItems, ...item];
+    } else {
+      this.item_list = [...confirmItems, item];
+    }
+    // this.item_list = [...this.item_list, item];
     if (this.modifiedList.findIndex(item => item === 'item_list') === -1) this.modifiedList.push('item_list');
   };
   @action deleteMaterialItem = item => {
@@ -192,7 +198,7 @@ class DetailStore {
     }
   };
 
-  @action update = () => {
+  @action update = async () => {
     if (!this.shouldSaveBill) {
       Toast.show('单据没有被修改，无需保存');
       return;
@@ -222,7 +228,7 @@ class DetailStore {
 
     if (confirmResp.finished && unConfrimResp.finished) {
       this.comfirmedItems = [...this.currentComfirmedItems];
-      // Toast.show('更新物料状态成功');
+      Toast.show('更新物料状态成功');
     } else Toast.show('抱歉，更新物料确认情况失败，请刷新页面后重新尝试');
   };
 
