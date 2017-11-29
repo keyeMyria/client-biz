@@ -15,6 +15,7 @@ class Partners {
 
   @action load = async () => {
     if (this.loading) return;
+    if (this.landed && !this.hasMore) return;
     this.loading = true;
     const pageNo = this.pageNo > 1 ? this.pageNo : null;
     try {
@@ -23,7 +24,7 @@ class Partners {
         if (resp.code === '0' && resp.data.list) {
           this.DS = this.pageNo > 1 ? [...this.DS, ...resp.data.list] : [...resp.data.list];
           this.recordCount = (resp.data.pagination && resp.data.pagination.record_count) || 0;
-          this.hasMore = !!resp.data.pagination.has_next_page;
+          this.hasMore = resp.data.pagination.has_next_page !== 0;
           if (this.hasMore) this.pageNo++;
         } else Toast.show(resp.msg);
       })

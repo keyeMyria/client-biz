@@ -32,7 +32,7 @@ export default class TotalMaterials extends React.Component {
     }
     return (
       <div className={isDialog ? '' : 'materials-wrapper'}>
-        <Table multiSelectable={true} onRowSelection={this.onRowSelection}>
+        <Table multiSelectable={true} onRowSelection={this.onRowSelection} onCellClick={this.onCellClick}>
           <TableHeader displaySelectAll={false} adjustForCheckbox={!!isDialog}>
             <TableRow>
               <TableHeaderColumn style={{padding: 20, width: 50}}>ID</TableHeaderColumn>
@@ -110,5 +110,9 @@ export default class TotalMaterials extends React.Component {
     if (!onRowSelection) return;
     const items = value.map(value => this.store.itemList[value]);
     onRowSelection(items);
+  }
+  onCellClick = (row, column) => {
+    if (column === 7 || !!this.props.onRowSelection) return;
+    this.store.openItemDialog(this.store.itemList[row]);
   }
 }

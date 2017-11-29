@@ -41,13 +41,13 @@ const updateDepartment = async (id, name, parent_id, remark) => {
   return resp.data;
 };
 
-const addItem = async (item_name, item_code, item_spec, unit, price) => {
-  const resp = await axios.post('/base_gateway/add_item', {item_name, item_code, item_spec, unit, price});
+const addItem = async (item_name, item_code, item_spec, unit, price, item_func, partner_item_list) => {
+  const resp = await axios.post('/base_gateway/add_item', {item_name, item_code, item_spec, unit, price, item_func, partner_item_list});
   return resp.data;
 };
 
-const updateItem = async (item_id, item_name, item_code, item_spec, unit, price) => {
-  const resp = await axios.post('/base_gateway/update_item', {item_id, item_name, item_code, item_spec, unit, price});
+const updateItem = async (item_id, item_name, item_code, item_spec, unit, price, item_func, partner_item_list) => {
+  const resp = await axios.post('/base_gateway/update_item', {item_id, item_name, item_code, item_spec, unit, price, item_func, partner_item_list});
   return resp.data;
 };
 

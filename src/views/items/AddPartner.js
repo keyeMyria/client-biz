@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
-import {observable, action, runInAction} from 'mobx';
+import {observable, action, runInAction, computed} from 'mobx';
 import TextField from 'material-ui/TextField';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
@@ -35,6 +35,10 @@ class AddPartnerState {
     this.address = partner.address || '';
   }
 
+  @computed get validated() {
+    return !!this.partner_id && !!(this.partner_flag && this.partner_flag.length);
+  }
+
   submitType = {
     ADD: 0,
     MODIFY: 1,
@@ -42,7 +46,7 @@ class AddPartnerState {
 
   @action setKey = (key, val) => this[key] = val;
   @action submit = async (type = this.submitType.ADD) => {
-    if (this.submitting || !this.partner_id) return;
+    if (this.submitting || !this.validated) return;
     this.submitting = true;
     try {
       const service = type === this.submitType.ADD ? PartnerSvc.invite : BaseSvc.updatePartner;
@@ -107,7 +111,7 @@ class AddPartner extends React.Component {
           <MenuItem value='CUSTOMER' primaryText="客户" />
           <MenuItem value='SUPPLIER' primaryText="供应商" />
           <MenuItem value='CUSTOMER,SUPPLIER' primaryText="客户 / 供应商" />
-          <MenuItem value={null} primaryText="" />
+          {/*<MenuItem value={null} primaryText="" />*/}
         </SelectField>
         <SelectField
           floatingLabelText="合作伙伴类型（选填）"
@@ -153,7 +157,8 @@ class AddPartner extends React.Component {
             isAdmin && (
               <RaisedButton style={{ marginTop: 20 }} label={this.store.submitting ? null : submitTxt}
                             icon={this.store.submitting ? <CircularProgress size={28}/> : null}
-                            primary={!!this.store.partner_id} disabled={!this.store.partner_id}
+                            primary={!!this.store.validated}
+                            disabled={!this.store.validated}
                             onClick={this.store.submit.bind(null, submitType)} />
             )
           }
@@ -172,7 +177,7 @@ class AddPartner extends React.Component {
           style={{marginRight: 20, top: -15}}
         />
         <SelectField
-          floatingLabelText="合作伙伴标识（选填）"
+          floatingLabelText="合作伙伴标识"
           value={this.store.partner_flag}
           disabled={!isAdmin}
           style={{marginRight: 20}}
@@ -181,13 +186,12 @@ class AddPartner extends React.Component {
           <MenuItem value='CUSTOMER' primaryText="客户" />
           <MenuItem value='SUPPLIER' primaryText="供应商" />
           <MenuItem value='CUSTOMER,SUPPLIER' primaryText="客户 / 供应商" />
-          <MenuItem value={null} primaryText="" />
         </SelectField>
         <div style={{textAlign: 'right'}}>
           <RaisedButton style={{ marginTop: 20 }} label={this.store.submitting ? null : submitTxt}
                         icon={this.store.submitting ? <CircularProgress size={28}/> : null}
-                        primary={!!this.store.partner_id}
-                        disabled={!this.store.partner_id}
+                        primary={this.store.validated}
+                        disabled={!this.store.validated}
                         onClick={this.store.submit.bind(null, submitType)} />
           <RaisedButton style={{ marginTop: 20, marginLeft: 20 }} label="取消"
                         primary={false} onClick={BizDialog.onClose} />
