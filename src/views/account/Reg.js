@@ -28,15 +28,16 @@ export default class Register extends React.Component {
     type: AccountType.MOBILE,
   };
   get validated() {
-    const {account, username, password, verify_code, error} = this.state;
+    const {account, username, password, verify_code, error, type} = this.state;
     const nameValidated = username.trim().length > 0;
     const accountValidated = account.trim().length > 0;
     const passwordValidated = password.trim().length > 5 && password.trim().length <= 20;
+    const codeValidated = ((type === AccountType.MAIL) && !!verify_code) || (type === AccountType.MOBILE);
     let errorCount = 0;
     Object.keys(error).forEach(key => {
       if (error[key] && error[key].length) errorCount++;
     });
-    return (accountValidated && nameValidated && passwordValidated && !!verify_code && (errorCount <= 0));
+    return (accountValidated && nameValidated && passwordValidated && codeValidated && (errorCount <= 0));
   }
 
   checkName = () => {
@@ -188,14 +189,16 @@ export default class Register extends React.Component {
                 <MenuItem value={AccountType.MAIL} primaryText="邮箱" />
               </SelectField>
             </div>
-            <SmsVerify
-              parent={this}
-              verifyCode={verify_code}
-              error={error}
-              account={account}
-              type={type}
-              checkVerify={this.checkVerify}
-            />
+            {type === AccountType.MAIL && (
+              <SmsVerify
+                parent={this}
+                verifyCode={verify_code}
+                error={error}
+                account={account}
+                type={type}
+                checkVerify={this.checkVerify}
+              />
+            )}
             <TextField
               hintText="请输入用户名"
               value={username}
