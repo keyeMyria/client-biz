@@ -178,10 +178,11 @@ class AddMaterial extends React.Component {
     try {
       if (material.item_id) {
         const resp = await BaseSvc.getItem(material.item_id);
-        if (resp.code === '0') {
+        if (resp.code === '0' && resp.data) {
           material = resp.data;
         } else {
-          Toast.show(resp.msg || '抱歉，发生未知错误，请稍后重试');
+          Toast.show(resp.msg || '抱歉，获取物料失败，请检查物料是否已被删除');
+          return;
         }
       }
     } catch (e) {
@@ -197,7 +198,7 @@ class AddMaterial extends React.Component {
     this.setState({loading: false});
   }
   render() {
-    if (this.state.loading) return <div style={{height: 510}}><CircularProgress size={28}/></div>;
+    if (this.state.loading) return <div className='material-loading'><CircularProgress size={28}/></div>;
     const {material, onDel, isBill, isBillEdit} = this.props;
     const submitTxt = (material && material.item_id) ? '修改' : '创建';
     const submitAction = (material && material.item_id) ? this.store.update : this.store.submit;
