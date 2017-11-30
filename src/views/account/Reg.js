@@ -7,13 +7,8 @@ import RaisedButton from 'material-ui/RaisedButton';
 import CircularProgress from 'material-ui/CircularProgress';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
-import {accountService} from "../../services/account";
+import {accountService, AccountType} from "../../services/account";
 import Toast, {ToastStore} from "../../components/Toast";
-
-const AccountType = {
-  MOBILE: 'mobile',
-  MAIL: 'mail',
-}
 
 @inject('user')
 @observer
@@ -22,20 +17,26 @@ export default class Register extends React.Component {
     username: '',
     password: '',
     account: '',
+    verify_code: '',
     error: {
       account: '',
       username: '',
       password: '',
+      verify_code: '',
     },
     submitting: false,
     type: AccountType.MOBILE,
   };
   get validated() {
-    const {account, username, password} = this.state;
+    const {account, username, password, verify_code, error} = this.state;
     const nameValidated = username.trim().length > 0;
     const accountValidated = account.trim().length > 0;
     const passwordValidated = password.trim().length > 5 && password.trim().length <= 20;
-    return (accountValidated && nameValidated && passwordValidated);
+    let errorCount = 0;
+    Object.keys(error).forEach(key => {
+      if (error[key] && error[key].length) errorCount++;
+    });
+    return (accountValidated && nameValidated && passwordValidated && !!verify_code && (errorCount <= 0));
   }
 
   checkName = () => {
@@ -64,13 +65,13 @@ export default class Register extends React.Component {
       error.account = '请使用有效的手机号'
     } else {
       if (this.state.error.account.length) this.setState({error});
-      // if (!error.account.length) {
-      //   if (type === AccountType.MOBILE) {
-      //     this.onReqCheckMobile(account);
-      //   } else {
-      //     this.onReqCheckMail(account);
-      //   }
-      // }
+      if (!error.account.length) {
+        if (type === AccountType.MOBILE) {
+          this.onReqCheckMobile(account);
+        } else {
+          this.onReqCheckMail(account);
+        }
+      }
       return;
     }
     this.setState({error});
@@ -116,13 +117,25 @@ export default class Register extends React.Component {
     this.setState({ error });
   };
 
+  checkVerify = () => {
+    const {verify_code} = this.state;
+    const error = {...this.state.error, verify_code: ''};
+    if (!verify_code) {
+      error.verify_code = '验证码不能为空';
+    } else {
+      if (this.state.error.verify_code.length) this.setState({ error });
+      return;
+    }
+    this.setState({ error });
+  };
+
   register = async (e) => {
     e.preventDefault();
     if (this.state.submitting) return;
     this.setState({ submitting: true });
-    const {account, username, password} = this.state;
+    const {account, username, password, verify_code} = this.state;
     try {
-      const resp = await accountService.register(account, username, password);
+      const resp = await accountService.register(account, username, password, verify_code);
       if (resp.code === '0') {
         const loginResp = await accountService.login(account, password);
         const token = loginResp.data.access_token;
@@ -143,7 +156,7 @@ export default class Register extends React.Component {
   };
 
   render() {
-    const { account, username, password, error, submitting, type } = this.state;
+    const { account, username, password, error, submitting, type, verify_code } = this.state;
     return (
       <div className="layout register-view">
         <div className="title">
@@ -175,6 +188,14 @@ export default class Register extends React.Component {
                 <MenuItem value={AccountType.MAIL} primaryText="邮箱" />
               </SelectField>
             </div>
+            <SmsVerify
+              parent={this}
+              verifyCode={verify_code}
+              error={error}
+              account={account}
+              type={type}
+              checkVerify={this.checkVerify}
+            />
             <TextField
               hintText="请输入用户名"
               value={username}
@@ -205,4 +226,69 @@ export default class Register extends React.Component {
     );
   }
   handleTypeChange = (event, index, type) => this.setState({type, account: ''});
+}
+
+class SmsVerify extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {countDown: 0, submitting: false};
+  }
+  render() {
+    const {checkVerify, parent, verifyCode, error, account} = this.props;
+    const {countDown} = this.state;
+    return (
+      <div style={{position: 'relative', overflow: 'visible'}}>
+        <TextField
+          hintText='验证码'
+          value={verifyCode}
+          type='number'
+          onBlur={checkVerify}
+          onChange={e => parent.setState({ verify_code: e.target.value })}
+          errorText={error.verify_code}
+          style={{display: 'inline-block'}}
+          className="login-input"/>
+        <RaisedButton
+          label={countDown >= 1 ? `${countDown}秒后重新获取` : "获取验证码"}
+          labelStyle={{padding: 0}}
+          primary={false}
+          disabled={!account || !!error.account || (countDown > 0 && countDown <= 60)}
+          style={{width: 120, position: 'absolute', right: -125}}
+          onClick={this.submit}
+        />
+      </div>
+    );
+  }
+  submit = async () => {
+    const {account, type} = this.props;
+    const {countDown, submitting} = this.state;
+    if (submitting || (countDown > 0 && countDown <= 60)) return;
+    this.onCountDown();
+    this.setState({submitting: true});
+    try {
+      const resp = await accountService.sendVerifyCode(account, type === AccountType.MOBILE ? AccountType.MOBILE : AccountType.MAIL);
+      if (resp.code !== '0') {
+        ToastStore.show(resp.msg|| '抱歉，发生未知错误，请稍后重试');
+      } else {
+        ToastStore.show('已发送验证码，请注意接收');
+      }
+    }
+     catch (e) {
+      console.log(e, 'send verify code');
+      ToastStore.show('抱歉，发生未知错误，请稍后重试');
+    }
+    this.setState({submitting: false});
+  }
+  onCountDown = () => {
+    let {countDown} = this.state;
+    if (countDown === 0) {
+      countDown = 60
+    } else if (countDown === -1) {
+      countDown = 0;
+    } else {
+      countDown--;
+    }
+    this.setState({countDown});
+    if (countDown === 0) return;
+    setTimeout(() => this.onCountDown(), 1000);
+  }
 }
