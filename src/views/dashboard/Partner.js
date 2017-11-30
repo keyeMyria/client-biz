@@ -172,11 +172,18 @@ const iconButtonElement = (
 );
 
 const getPartnerType = type => {
-  let str = type;
-  str = str.replace('SHIPTO', '送达方');
-  str = str.replace('PAYER', '付款方');
-  str = str.replace('DRAWER', '开票方');
-  return str;
+  if (typeof type === 'string') {
+    let str = type;
+    str = str.replace('SHIPTO', '送达方');
+    str = str.replace('PAYER', '付款方');
+    str = str.replace('DRAWER', '开票方');
+    return str;
+  }
+  if (type instanceof Array) {
+    const formatType = type.map(raw => getPartnerType(raw));
+    return formatType.join(',');
+  }
+  return '未设定';
 };
 
 const getPartnerFlag = flag => {
