@@ -6,6 +6,7 @@ import FlatButton from 'material-ui/FlatButton';
 import TotalMaterials from './List';
 import AddMaterial from '../../items/AddMaterial';
 import MaterialsStore from '../../stores/materials';
+import Search from './Search';
 
 const TABS = {
   LIST: 1,
@@ -28,11 +29,11 @@ export default class Materials extends React.Component {
           <FontIcon className="material-icons" color="#333">dashboard</FontIcon>
           <span>商户物料</span>
         </a>
-        {/*<FlatButton*/}
-          {/*label={panel === TABS.LIST ? '查询' : '列表'}*/}
-          {/*primary={true}*/}
-          {/*onTouchTap={this.switchPanel}*/}
-        {/*/>*/}
+        <FlatButton
+          label={panel === TABS.LIST ? '查询' : '列表'}
+          primary={true}
+          onTouchTap={this.switchPanel}
+        />
         <FlatButton
           label='新建'
           primary={true}
@@ -46,7 +47,7 @@ export default class Materials extends React.Component {
     switch (this.state.panel) {
       default: return null;
       case TABS.LIST: return <TotalMaterials/>;
-      case TABS.SEARCH: return <div className="search-content"/>;
+      case TABS.SEARCH: return <div className="search-content"><Search /></div>;
     }
   };
 

@@ -66,6 +66,20 @@ const getItem = async (item_id) => {
   return resp.data;
 };
 
+export const SearchType = {
+  ITEM_NO: 1,
+  NAME: 2,
+  PARTNER: 3,
+  ALL: 5,
+};
+
+const searchItem = async (keyword, search_type) => {
+  let config = {keyword, search_type};
+  if (search_type === SearchType.ALL) config = {keyword};
+  const resp = await axios.post('/base_gateway/search_item_selective', config);
+  return resp.data;
+};
+
 const addPartner = async (partner_id, partner_flag, partner_type, inner_partner_id, inner_partner_name, tel, address) => {
   const resp = await axios.post('/base_gateway/add_partner', {partner_id, partner_flag, partner_type, inner_partner_id, inner_partner_name, tel, address});
   return resp.data;
@@ -110,4 +124,5 @@ export default {
   getPartnerList,
   getPartner,
   getItem,
+  searchItem,
 }
