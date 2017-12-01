@@ -47,7 +47,11 @@ export default class Materials extends React.Component {
     switch (this.state.panel) {
       default: return null;
       case TABS.LIST: return <TotalMaterials/>;
-      case TABS.SEARCH: return <div className="search-content"><Search /></div>;
+      case TABS.SEARCH: return (
+        <div className="search-content" style={{overflow: 'auto'}}>
+          <Search/>
+        </div>
+      );
     }
   };
 
