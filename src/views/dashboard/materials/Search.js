@@ -72,7 +72,7 @@ export default class SearchItem extends React.Component {
 
   render() {
     return (
-      <div className="board-search">
+      <form className="board-search" onSubmit={this.onSubmit}>
         <h3>搜索物料</h3>
         <SelectField
           floatingLabelText="查找类型"
@@ -98,8 +98,12 @@ export default class SearchItem extends React.Component {
         {/*<p style={{color: '#999', fontSize: 12}}>(最多返回100条查询结果)</p>*/}
         {this.store.searching && <CircularProgress size={28} style={{display: 'block', margin: '20px auto'}}/>}
         {!!(this.store.searchResult && this.store.searchResult.length) && <List store={this.store}/>}
-      </div>
+      </form>
     );
+  }
+  onSubmit = (e) => {
+    e.preventDefault();
+    this.store.search();
   }
 }
 
@@ -111,7 +115,7 @@ class List extends React.Component {
     const DS = store.searchResult;
     return (
       <div className='materials-wrapper'>
-        <Table multiSelectable={true} onCellClick={this.onCellClick}>
+        <Table multiSelectable={false} onCellClick={this.onCellClick}>
           <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
             <TableRow>
               <TableHeaderColumn style={{padding: 20, width: 50}}>ID</TableHeaderColumn>
@@ -135,13 +139,13 @@ class List extends React.Component {
                 <TableRowColumn style={{...tableRowStyle, width: 50}}>{item.price}</TableRowColumn>
                 <TableRowColumn style={tableRowStyle}>{item.create_time}</TableRowColumn>
                 <TableRowColumn style={tableRowStyle}>
-                  <button className="btn-material-action" onClick={e => {
+                  <button className="btn-material-action" type='button' onClick={e => {
                     e.preventDefault();
                     MaterialsStore.openItemDialog(item);
                   }}>
                     修改
                   </button>
-                  <button className="btn-material-action" onClick={e => {
+                  <button className="btn-material-action" type='button' onClick={e => {
                     e.preventDefault();
                     this.onDelete(item);
                   }}>

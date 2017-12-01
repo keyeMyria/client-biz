@@ -123,8 +123,12 @@ class FinBillStore {
       const resp = await FinancialSvc.getBill(this.searchedBillNo);
       runInAction('after search', () => {
         if (resp.code === '0') {
-          Toast.show('搜索完成');
           this.searchResult = resp.data.head;
+          if (this.searchResult) {
+            Toast.show('搜索完成');
+          } else {
+            Toast.show('没有搜索到相关结果');
+          }
         } else Toast.show(resp.msg || '抱歉，搜索失败，请刷新页面后重新尝试');
       });
     } catch (e) {
@@ -198,7 +202,7 @@ class Search extends React.Component {
   store = FinStore;
   render() {
     return(
-      <div className="board-search">
+      <form className="board-search" style={{maxWidth: 400}} onSubmit={this.onSubmit}>
         <h3>查找结算单</h3>
         <TextField
           floatingLabelText="请输入查找的单据号"
@@ -232,7 +236,11 @@ class Search extends React.Component {
             secondaryTextLines={2}
           />
         )}
-      </div>
+      </form>
     );
+  }
+  onSubmit = (e) => {
+    e.preventDefault();
+    this.store.search();
   }
 }

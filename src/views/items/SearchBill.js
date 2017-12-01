@@ -111,7 +111,7 @@ export default class SearchBill extends React.Component {
     let text = '关键字';
     if (this.store.searchType === SearchType.BILL_NO) text = '单据号';
     return (
-      <div className="board-search">
+      <form className="board-search" style={{maxWidth: 400}} onSubmit={this.onSubmit}>
         <h3>{title}</h3>
         <SelectField
           floatingLabelText="查找类型"
@@ -146,7 +146,11 @@ export default class SearchBill extends React.Component {
             </div>
           )}
         </div>
-      </div>
+      </form>
     );
+  }
+  onSubmit = (e) => {
+    e.preventDefault();
+    this.store.search();
   }
 }

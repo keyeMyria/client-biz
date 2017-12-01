@@ -196,7 +196,7 @@ class Search extends React.Component {
   searchStore = new SearchStore();
   render() {
     return (
-      <div className="search-mail-container">
+      <form className="search-mail-container" onSubmit={this.onSubmit}>
         <h3>查找邮件</h3>
         <SelectField
           floatingLabelText="查找类型"
@@ -219,8 +219,12 @@ class Search extends React.Component {
                       disabled={!this.searchStore.searchValidated} onTouchTap={this.searchStore.search}/>
         <br/>
         <SearchList listData={this.searchStore.DS} searched={this.searchStore.searched}/>
-      </div>
+      </form>
     );
+  }
+  onSubmit = (e) => {
+    e.preventDefault();
+    this.searchStore.search();
   }
 }
 
