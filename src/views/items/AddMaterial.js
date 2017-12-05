@@ -134,7 +134,10 @@ class AddMaterialState {
         }
         else Toast.show(resp.msg || '抱歉，操作失败，请稍后重试');
       });
-      if (!this.id || resp.code !== '0') return;
+      if (!this.id || resp.code !== '0') {
+        this.submitting = false;
+        return;
+      }
       const data = await BaseSvc.getItem(this.id);
       runInAction('after load item detail', () => {
         if (data.code === '0' && onUpdateCallback) {
