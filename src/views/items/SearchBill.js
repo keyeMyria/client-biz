@@ -1,17 +1,14 @@
 import React from 'react';
 import {observable, computed, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
+import {Select, Input, Spin} from 'antd';
+import {LoadMoreButton} from '../../components/Buttons';
 import {MessageItem} from "../../components/ListItem";
-import RaisedButton from 'material-ui/RaisedButton';
-import FlatButton from 'material-ui/FlatButton';
-import Divider from 'material-ui/Divider';
-import CircularProgress from 'material-ui/CircularProgress';
-import TextField from 'material-ui/TextField';
-import SearchIcon from 'material-ui/svg-icons/action/search';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
 import BillSvc from '../../services/bill';
 import {ToastStore as Toast} from "../../components/Toast";
+
+const Option = Select.Option;
+const Search = Input.Search;
 
 const SearchType = {
   BILL_NO: 0,
@@ -113,36 +110,28 @@ export default class SearchBill extends React.Component {
     return (
       <form className="board-search" style={{maxWidth: 400}} onSubmit={this.onSubmit}>
         <h3>{title}</h3>
-        <SelectField
-          floatingLabelText="查找类型"
-          value={this.store.searchType}
-          style={{marginRight: 20}}
-          onChange={(event, index, val) => this.store.searchType = val}
-        >
-          <MenuItem value={SearchType.BILL_NO} primaryText='单据号' />
-          <MenuItem value={SearchType.PARTNER_NAME} primaryText='物料名称' />
-          <MenuItem value={SearchType.ITEM_NAME} primaryText='合作伙伴名称' />
-        </SelectField><br/>
-        <TextField
-          floatingLabelText={`请输入查找的${text}`}
-          value={this.store.searchKey}
-          type={this.store.searchType === SearchType.BILL_NO ? 'number' : 'text'}
+        <Select defaultValue={SearchType.BILL_NO} style={{width: 200, marginTop: 20}} onChange={val => this.store.searchType = val}>
+          <Option value={SearchType.BILL_NO}>单据号</Option>
+          <Option value={SearchType.PARTNER_NAME}>物料名称</Option>
+          <Option value={SearchType.ITEM_NAME}>合作伙伴名称</Option>
+        </Select>
+        <br/>
+        <Search
+          placeholder={`请输入查找的${text}`}
+          style={{width: 300, margin: '20px 0'}}
           onChange={e => this.store.searchKey = e.target.value}
-          style={{marginRight: 20}}
+          onSearch={() => this.store.search.bind(null, isProcurement)}
         />
-        <RaisedButton label="查找" primary={this.store.searchValidated} icon={<SearchIcon />}
-                      disabled={!this.store.searchValidated} onTouchTap={this.store.search.bind(null, isProcurement)}/>
         <br/>
         {this.store.searchType !== SearchType.BILL_NO && <p style={{color: '#999', fontSize: 12}}>(最多返回100条查询结果)</p>}
-        {this.store.searching && <CircularProgress size={28} style={{display: 'block', margin: '20px auto'}}/>}
-        <div style={{width: 400, marginTop: 20}}>
+        {this.store.searching && <Spin size="large" style={{display: 'block', margin: '20px auto'}}/>}
+        <div style={{width: 400, minHeight: 40}}>
           {!!this.store.searchResult.length && this.store.searchResult.map((item, key) => (
             <MessageItem message={item} isProcurement={isProcurement} key={key}/>
           ))}
           {this.store.hasMore && (
             <div style={{backgroundColor: '#FFF', textAlign: 'right'}}>
-              <Divider inset={true} />
-              <FlatButton label="加载更多" primary={true} onTouchTap={this.store.search.bind(null, isProcurement)}/>
+              <LoadMoreButton onTouchTap={this.store.search.bind(null, isProcurement)}/>
             </div>
           )}
         </div>

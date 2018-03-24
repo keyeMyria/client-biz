@@ -1,13 +1,14 @@
 import React from 'react';
 import {observer} from 'mobx-react';
+import {Button} from 'antd';
+import {LoadMoreButton} from '../../../components/Buttons';
 import {BoxHeader} from "../../../components/BoxHeader";
-import FlatButton from 'material-ui/FlatButton';
 import mailsStore from "../../stores/mailList";
 import AddMail from "../../items/AddMail";
 import {BizDialog} from "../../../components/Dialog";
 import {DrawerStore} from "../../../components/Drawer";
 
-class MailBox extends React.PureComponent {
+class MailBox extends React.Component {
   store = mailsStore;
   state = {
     mailFilterValue: 0,
@@ -39,7 +40,7 @@ class MailBox extends React.PureComponent {
     }
   };
 
-  onSelect = e => this.setState({mailFilterValue: parseInt(e.target.value, 10)});
+  onSelect = value => this.setState({mailFilterValue: parseInt(value, 10)});
   render() {
     return (
       <div className="board-layout message-box">
@@ -48,8 +49,10 @@ class MailBox extends React.PureComponent {
           {this.mailDS.map((mail, index) => <MessageItem message={mail} key={index}/>)}
           {!this.mailDS.length && <p className="none-data">暂无内容</p>}
           <div style={{width: '100%', textAlign: 'right'}}>
-            {this.store.hasMore && <FlatButton label="加载更多" primary onTouchTap={this.store.load}/>}
-            <FlatButton label="发送邮件" primary onTouchTap={() => BizDialog.onOpen('发送邮件', <AddMail />)}/>
+            {this.store.hasMore && <LoadMoreButton onTouchTap={this.store.load} style={{marginRight: 10}}/>}
+            <Button onTouchTap={() => BizDialog.onOpen('发送邮件', <AddMail />)} style={{backgroundColor: 'transparent'}}>
+              发送邮件
+            </Button>
           </div>
         </div>
       </div>

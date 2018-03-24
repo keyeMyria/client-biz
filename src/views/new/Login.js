@@ -10,7 +10,7 @@ import FontIcon from 'material-ui/FontIcon';
 import {accountService} from "../../services/account";
 import Storage from '../../utils/storage';
 import { Form, Icon, Input, Button, Modal } from 'antd';
-import Toast, {ToastStore} from "../../components/Toast";
+import {ToastStore} from "../../components/Toast";
 
 
 
@@ -153,7 +153,6 @@ export default class Login extends React.Component {
             </Form.Item>
           </Form>
         </div>
-        <Toast />
       </div>
     );
   }

@@ -1,35 +1,27 @@
 import React from 'react';
 import { observable, computed, action } from 'mobx';
-import { observer } from 'mobx-react';
-import Snackbar from 'material-ui/Snackbar';
+import { message } from 'antd';
 
 class Store {
   @observable message = '';
-  @observable duration = 2000;
+  @observable duration = 1500;
   @computed get open() {
     return !!this.message;
   }
 
-  @action show = (message, duration = 2000) => {
-    this.message = message;
+  @action show = (text, duration = 1500) => {
+    this.message = text;
     this.duration = duration;
-    if (message === 'token已过期') window.location.replace('/');
+    if (text === 'token已过期') {
+      window.location.replace('/');
+      return;
+    }
+    message.info(text, duration / 1000);
   };
   @action close = () => {
     this.message = '';
-    this.duration = 2000;
+    this.duration = 1500;
   }
 }
 
 export const ToastStore = new Store();
-
-const Toast = observer(() => (
-  <Snackbar
-    open={ToastStore.open}
-    message={ToastStore.message}
-    autoHideDuration={ToastStore.duration}
-    onRequestClose={ToastStore.close}
-  />
-));
-
-export default Toast;

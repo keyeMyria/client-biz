@@ -34,6 +34,29 @@
   box-sizing: border-box;
 }
 
+.detail-info {
+  padding: 10px 0;
+  > p {
+    display: inline-block;
+    width: 300px;
+    font-size: 14px;
+    color: #999;
+    line-height: 30px;
+    .text-ellipsis();
+  }
+}
+
+.detail-form-item {
+  padding-right: 20px;
+  box-sizing: border-box;
+  .flex(row);
+  .flex-align(center, space-between);
+  > div {
+    flex: 1;
+    margin-right: 10px;
+  }
+}
+
 .detail-label {
   font-size: 16px;
   color: #797979;

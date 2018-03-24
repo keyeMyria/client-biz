@@ -10,7 +10,6 @@ import AddMerchant from "./items/AddMerchant";
 import AddBill from "./items/AddBill";
 import DialogForm from "./items/DialogForm";
 import ProfileDialog from "./items/ProfileDialog";
-import Toast from "../components/Toast";
 import {DialogComponent, BizDialog} from "../components/Dialog";
 import DetailDrawer from "../components/Drawer";
 
@@ -41,7 +40,6 @@ export default class Dashboard extends React.Component {
         {routes && routes.map((route, i) => (
           <RouteWithSubRoutes key={i} {...route}/>
         ))}
-        <Toast />
         <DialogComponent />
         <DetailDrawer />
       </div>

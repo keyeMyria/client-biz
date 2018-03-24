@@ -1,40 +1,31 @@
 import React from 'react';
-import { Layout, Menu, Breadcrumb, Icon, Avatar } from 'antd';
-import { Link, withRouter } from 'react-router-dom';
+import { Layout, Menu, Icon, Avatar } from 'antd';
 import { observer, inject } from 'mobx-react';
 import { RouteWithSubRoutes } from "../router/index";
-import RaisedButton from 'material-ui/RaisedButton';
-import Popover, {PopoverAnimationVertical} from 'material-ui/Popover';
-// import Menu from 'material-ui/Menu';
-import MenuItem from 'material-ui/MenuItem';
-import AddMerchant from "./items/AddMerchant";
-import AddBill from "./items/AddBill";
-import DialogForm from "./items/DialogForm";
-import ProfileDialog from "./items/ProfileDialog";
-import Toast from "../components/Toast";
 import {DialogComponent, BizDialog} from "../components/Dialog";
 import DetailDrawer from "../components/Drawer";
+import {ToastStore as Toast} from '../components/Toast';
 
-const { SubMent } = Menu;
-const { Footer, Content, Sider } = Layout;
+// const { SubMent } = Menu;
+const { Content, Sider } = Layout;
 
 
 @inject('user')
 @observer
 export default class Dashboard extends React.Component {
   state = {
-    collapsed: true
-  }
+    collapsed: true,
+  };
   constructor(props) {
     super(props);
-    console.log(props);
+    // console.log(props);
     if (!props.user) this.props.history.replace('/');
   }
-  // async componentWillMount() {
-  //   if (this.props.match.path === '/dashboard') {
-  //     this.props.history.push('/dashboard/main');
-  //   }
-  // }
+  async componentWillMount() {
+    if (this.props.match.path === '/v1/dashboard') {
+      this.props.history.push('/v1/dashboard/user.index');
+    }
+  }
   reLogin = () => {
     this.props.user.logout();
     this.props.history.replace('/');
@@ -42,7 +33,13 @@ export default class Dashboard extends React.Component {
 
   onCollapse = (collapsed) => {
     this.setState({ collapsed });
-  }
+  };
+
+  handleClick = (e) => {
+    console.log(e.key, e);
+    if (!e.key) return;
+    this.props.history.replace(`/v1/dashboard/${e.key}`);
+  };
   render() {
     const {routes} = this.props;
     return (
@@ -51,20 +48,23 @@ export default class Dashboard extends React.Component {
                collapsed={this.state.collapsed}
                onCollapse={this.onCollapse}>
           <Menu theme={'dark'}
+                onClick={this.handleClick}
                 defaultSelectedKeys={['user.index']}>
             <Menu.Item key="user.index">
               <Icon type="desktop" />
               <span>我的工作台</span>
             </Menu.Item>
-            <Menu.Item key="partarner">
+            <Menu.Item key="merchant">
+              <Icon type="idcard" />
+              <span>商户</span>
+            </Menu.Item>
+            <Menu.Item key="partner">
               <Icon type="usergroup-add" />
               <span>伙伴</span>
             </Menu.Item>
-            <Menu.Item key="material">
+            <Menu.Item key="materials">
               <Icon type="global" />
               <span>物料</span>
-            </Menu.Item>
-            <Menu.Item key="4">
             </Menu.Item>
             <div style={{position: 'fixed', bottom: 60, left: this.state.collapsed ? 20 : 77 }}>
               <Avatar style={{backgroundColor: '#f56a00'}} size={'large'}>{this.props.user.user.current.name}</Avatar>

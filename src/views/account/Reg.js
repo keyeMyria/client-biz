@@ -8,7 +8,7 @@ import CircularProgress from 'material-ui/CircularProgress';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 import {accountService, AccountType} from "../../services/account";
-import Toast, {ToastStore} from "../../components/Toast";
+import {ToastStore} from "../../components/Toast";
 
 @inject('user')
 @observer
@@ -224,7 +224,6 @@ export default class Register extends React.Component {
             </div>
           </from>
         </div>
-        <Toast />
       </div>
     );
   }

@@ -2,7 +2,7 @@ import React from 'react';
 import {observer, inject} from 'mobx-react';
 import {BoxHeader} from "../../../components/BoxHeader";
 import {MessageItem} from "../../../components/ListItem";
-import FlatButton from 'material-ui/FlatButton';
+import {LoadMoreButton} from '../../../components/Buttons';
 import sellActivitiesStore from "../../stores/sell-activities";
 
 @inject('user')
@@ -41,7 +41,7 @@ export default class SaleBox extends React.Component {
     }
   };
 
-  onSelect = e => this.setState({messagesFilterValue: parseInt(e.target.value, 10)});
+  onSelect = value => this.setState({messagesFilterValue: parseInt(value, 10)});
   render() {
     if (!(this.props.user.user && this.props.user.user.current)) return null;
     return (
@@ -53,7 +53,7 @@ export default class SaleBox extends React.Component {
             {this.props.user.user.current.is_admin ? '管理员无法获得业务动态' : '暂无内容'}
           </p>}
           <div style={{width: '100%', textAlign: 'right'}}>
-            {this.store.hasMore && <FlatButton label="加载更多" primary onTouchTap={this.store.load}/>}
+            {this.store.hasMore && <LoadMoreButton onTouchTap={this.store.load}/>}
           </div>
         </div>
       </div>

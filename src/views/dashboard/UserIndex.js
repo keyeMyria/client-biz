@@ -1,32 +1,13 @@
 import React from 'react';
-import FontIcon from 'material-ui/FontIcon';
 import MainBoard from './main/MainBoard';
 import ProcurementBoard from './procurement/ProcurementBoard';
 import SaleBoard from './sale/SaleBoard';
 import FinancialBoard from './financial/FinancialBoard';
-// import Calendar from './calendar/Calendar';
-// import {Tabs, Tab} from 'material-ui/Tabs';
-import { Tabs, Icon } from 'antd';
+import { Tabs } from 'antd'; // Icon
 const TabPane = Tabs.TabPane;
 
 export default class MainDashboard extends React.PureComponent {
   state={ tabValue: 0 };
-
-  handleTabsChange = tabValue => this.setState({ tabValue });
-
-  TabBar = () => {
-    const {tabValue} = this.state;
-    const tabStyle = {color: '#777', fontSize: 16};
-    return (
-      <div className="panel-nav">
-        <a className="title">
-          <FontIcon className="material-icons" color="#333">dashboard</FontIcon>
-          <span>我的工作台</span>
-        </a>
-        <div className="defaultRight" style={{width: 110, height: 50}}/>
-      </div>
-    );
-  };
 
   PanelContent = () => {
     switch (this.state.tabValue) {
@@ -42,7 +23,7 @@ export default class MainDashboard extends React.PureComponent {
     return (
       <div className="work-panel">
         <Tabs defaultActiveKey="1"
-              tabBarStyle={{backgroundColor: 'white'}}
+              tabBarStyle={{backgroundColor: 'white', paddingLeft: 20}}
               forceRender
               >
           <TabPane tab={<span>看板</span>} key="1">

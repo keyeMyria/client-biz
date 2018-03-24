@@ -5,9 +5,9 @@ import { observable, computed, action, runInAction } from 'mobx';
 import {persist} from 'mobx-persist'
 import FontIcon from 'material-ui/FontIcon';
 import {accountService} from "../../services/account";
-import Storage from '../../utils/storage';
+// import Storage from '../../utils/storage';
 import { Form, Icon, Input, Button, Modal } from 'antd';
-import Toast, {ToastStore} from "../../components/Toast";
+import {ToastStore} from "../../components/Toast";
 
 class LoginState {
   @observable username = '';
@@ -144,7 +144,6 @@ export default class Login extends React.Component {
             </Form.Item>
           </Form>
         </div>
-        <Toast />
       </div>
     );
   }

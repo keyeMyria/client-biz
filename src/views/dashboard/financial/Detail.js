@@ -1,28 +1,15 @@
 import React from 'react';
-import { observable, computed, action, runInAction} from 'mobx';
-import { observer } from 'mobx-react';
+import {observable, computed, action, runInAction} from 'mobx';
+import {observer} from 'mobx-react';
+import {Button, Select, Tooltip, Checkbox, Form, Input, Table, Modal, Spin} from 'antd';
 import Drawer from 'material-ui/Drawer';
-import CircularProgress from 'material-ui/CircularProgress';
-import TextField from 'material-ui/TextField';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
-import IconButton from 'material-ui/IconButton';
-import {
-  Table,
-  TableBody,
-  TableHeader,
-  TableHeaderColumn,
-  TableRow,
-  TableRowColumn,
-} from 'material-ui/Table';
-import Dialog from 'material-ui/Dialog';
-import RaisedButton from 'material-ui/RaisedButton';
-import Checkbox from 'material-ui/Checkbox';
 import {BizDialog, ConfirmDialog} from "../../../components/Dialog";
 import FinancialSvc from '../../../services/financialBill';
 import {ToastStore as Toast} from "../../../components/Toast";
 import {CURRENCY} from "../../../services/bill";
 import {FinStore} from './FinancialBoard';
+
+const Option = Select.Option;
 
 class DrawerState {
   @observable open = false;
@@ -221,144 +208,147 @@ export default class FinancialDetail extends React.Component {
 
   render() {
     const {detail} = this.store;
+    const iconBtnStyle = {backgroundColor: 'transparent', border: 'none', fontSize: 20};
     return (
       <Drawer
-        width={592}
+        width={620}
         openSecondary={true}
         open={this.store.open}
         docked={false}
         onRequestChange={this.onRequestChange}>
-        {!this.store.detail ? (<div style={{textAlign: 'center'}}><CircularProgress style={{marginTop: '40%'}}/></div>) : (
+        {!this.store.detail ? (<div style={{textAlign: 'center'}}><Spin size="large" style={{marginTop: '40%'}}/></div>) : (
           <div>
             <div className="detail-title">
               <p className="detail-label">单据号: {this.store.detail.head.bill_no}</p>
               <div>
-                <IconButton
-                  iconClassName="material-icons"
-                  onClick={this.store.save}
-                  tooltip='保存'
-                  iconStyle={{...FinancialDetail.styles.smallIcon, color: this.store.needSaveChange ? '#189acf' : '#d9d7d3'}}
-                  style={FinancialDetail.styles.small}>
-                  {'save'}
-                </IconButton>
-                <IconButton
-                  iconClassName="material-icons"
-                  onClick={this.onRequestChange}
-                  iconStyle={FinancialDetail.styles.smallIcon}
-                  style={{...FinancialDetail.styles.small, marginLeft: 20}}>
-                  {'close'}
-                </IconButton>
+                <Tooltip title='保存单据'>
+                  <Button style={iconBtnStyle} disabled={!this.store.needSaveChange} icon="save" onClick={this.store.save}/>
+                </Tooltip>
+                <Tooltip title='关闭'>
+                  <Button style={iconBtnStyle} icon="close" onClick={this.onRequestChange}/>
+                </Tooltip>
               </div>
             </div>
-            <div style={{paddingLeft: 20}}>
-              <TextField floatingLabelText="合作商户" value={detail.head.mer_name} disabled style={{marginRight: 20}}/>
-              <TextField floatingLabelText="合作商户ID" value={detail.head.mer_id} disabled style={{marginRight: 20}}/>
-              <TextField floatingLabelText="负责人" value={`${detail.head.user_name || '暂无'} (id: ${detail.head.user_id})`}
-                         disabled style={{marginRight: 20}}/>
+            <div style={{paddingLeft: 20, boxSizing: 'border-box'}}>
+              <div className='detail-info'>
+                <p>合作商户: {detail.head.mer_name}</p>
+                <p>合作商户ID: {detail.head.mer_id}</p>
+                <p>负责人: {`${detail.head.user_name || '暂无'} (id: ${detail.head.user_id})`}</p>
+              </div>
+              <Checkbox checked={this.store.confirm_status === 1} onChange={e => this.store.onCheck(e.target.checked)} style={{marginBottom: 10}}>
+                {this.store.confirm_status === 1 ? '取消确认结算单' : '确认结算单'}
+              </Checkbox>
+              <Checkbox checked={detail.head.relative_confirm_status === 1} disabled style={{marginBottom: 10}}>
+                合作商户确认状态
+              </Checkbox>
               <br/>
-              <Checkbox
-                label={this.store.confirm_status === 1 ? '取消确认结算单' : '确认结算单'}
-                checked={this.store.confirm_status === 1}
-                onCheck={(e, v) => this.store.onCheck(v)}
-                style={{display: 'inline-block', width: '49%', marginTop: 10}}
-              />
-              <Checkbox
-                label="合作商户确认状态"
-                checked={detail.head.relative_confirm_status === 1}
-                disabled
-                style={{display: 'inline-block', width: '49%', marginTop: 10}}
-              />
-              <br/>
-              <TextField floatingLabelText="供应商已开票金额"
-                         value={this.store.invoiced_amount || '未设置'}
-                         style={{marginRight: 20}}
-                         type="number"
-                         disabled={this.store.billLocked}
-                         onChange={e => this.store.setKey('invoiced_amount', e.target.value)}/>
-              <TextField floatingLabelText="客户已付款金额"
-                         value={this.store.pay_amount || '未设置'}
-                         style={{marginRight: 20}}
-                         type="number"
-                         disabled={this.store.billLocked}
-                         onChange={e => this.store.setKey('pay_amount', e.target.value)}/>
-              <TextField floatingLabelText="开票总金额"
-                         value={detail.head.total_amount || ''}
-                         style={{marginRight: 20}}
-                         type="number"
-                         disabled
-                         onChange={e => this.store.setKey('total_amount', e.target.value)}/>
-              <TextField floatingLabelText="币种" value={this.currency} disabled style={{marginRight: 20}}/>
-              <TextField floatingLabelText="付款方式" value={this.payType} disabled style={{marginRight: 20}}/>
-              <TextField floatingLabelText="含税标志" value={detail.head.tax_flag ? '含税' : '不含税'} disabled style={{marginRight: 20}}/>
-              <SelectField
-                floatingLabelText="结算类型" disabled
-                value={detail.head.settle_type}
-                style={{marginRight: 20}}>
-                <MenuItem value={0} primaryText="采购付款" />
-                <MenuItem value={1} primaryText="销售" />
-              </SelectField>
-              <SelectField
-                floatingLabelText="发票类型" disabled
-                value={detail.head.invoice_type}
-                style={{marginRight: 20}}>
-                <MenuItem value={0} primaryText="蓝色发票" />
-                <MenuItem value={1} primaryText="红字发票(冲减)" />
-              </SelectField>
-              <TextField floatingLabelText="创建时间" value={detail.head.create_time} disabled style={{marginRight: 20}}/>
-              <TextField floatingLabelText="更新时间" value={detail.head.update_time || '暂无'} disabled style={{marginRight: 20}}/>
+              <div className='detail-form-item'>
+                <Form.Item label='供应商已开票金额' style={{marginBottom: 10}}>
+                  <Input
+                    placeholder="未设置"
+                    type="number"
+                    disabled={this.store.billLocked}
+                    value={this.store.invoiced_amount}
+                    onChange={e => this.store.setKey('invoiced_amount', e.target.value)}
+                  />
+                </Form.Item>
+                <Form.Item label='客户已付款金额' style={{marginBottom: 10}}>
+                  <Input
+                    placeholder="未设置"
+                    type="number"
+                    disabled={this.store.billLocked}
+                    value={this.store.pay_amount}
+                    onChange={e => this.store.setKey('pay_amount', e.target.value)}
+                  />
+                </Form.Item>
+              </div>
+              <div className='detail-form-item'>
+                <Form.Item label='开票总金额' style={{marginBottom: 10}}>
+                  <Input
+                    disabled
+                    value={detail.head.total_amount || "未设置"}
+                    onChange={e => this.store.setKey('total_amount', e.target.value)}
+                  />
+                </Form.Item>
+                <Form.Item label='币种' style={{marginBottom: 10}}>
+                  <Input disabled value={this.currency || "未设置"}/>
+                </Form.Item>
+              </div>
+              <div className='detail-form-item'>
+                <Form.Item label='付款方式' style={{marginBottom: 10}}>
+                  <Input
+                    disabled
+                    value={this.payType || "未设置"}
+                    onChange={e => this.store.setKey('total_amount', e.target.value)}
+                  />
+                </Form.Item>
+                <Form.Item label='含税标志' style={{marginBottom: 10}}>
+                  <Input disabled value={detail.head.tax_flag ? '含税' : '不含税'}/>
+                </Form.Item>
+              </div>
+              <div className='detail-form-item'>
+                <Form.Item label='结算类型' style={{marginBottom: 10}}>
+                  <Select disabled value={detail.head.settle_type} style={{width: '100%'}}>
+                    {[
+                      <Option value={0} key={0}>采购付款</Option>,
+                      <Option value={1} key={1}>销售</Option>,
+                    ]}
+                  </Select>
+                </Form.Item>
+                <Form.Item label='发票类型' style={{marginBottom: 10}}>
+                  <Select disabled value={detail.head.invoice_type} style={{width: '100%'}}>
+                    {[
+                      <Option value={0} key={0}>蓝色发票</Option>,
+                      <Option value={1} key={1}>红字发票(冲减)</Option>,
+                    ]}
+                  </Select>
+                </Form.Item>
+              </div>
+              <div className='detail-form-item'>
+                <Form.Item label='创建时间' style={{marginBottom: 10}}>
+                  <Input disabled value={detail.head.create_time || "未设置"}/>
+                </Form.Item>
+                <Form.Item label='更新时间' style={{marginBottom: 10}}>
+                  <Input disabled value={detail.head.update_time || "未设置"}/>
+                </Form.Item>
+              </div>
               <br/><br/>
-              <Table>
-                <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
-                  <TableRow>
-                    <TableHeaderColumn>物料行号</TableHeaderColumn>
-                    <TableHeaderColumn>结算金额</TableHeaderColumn>
-                    <TableHeaderColumn style={{width: 40, textAlign: 'center'}}>操作</TableHeaderColumn>
-                  </TableRow>
-                </TableHeader>
-                <TableBody showRowHover displayRowCheckbox={false}>
-                  {this.store.settle_list.map((item, key) => (
-                    <TableRow key={key}>
-                      <TableRowColumn>{item.line_no}</TableRowColumn>
-                      <TableRowColumn>{item.settle_amount}</TableRowColumn>
-                      <TableRowColumn style={{width: 40}}>
-                        <button className="btn-material-action" onClick={e => {
-                          e.preventDefault();
-                          if (this.store.billLocked) return;
-                          this.store.handleOpenSettleDialog(item);
-                        }}>
-                          修改
-                        </button>
-                      </TableRowColumn>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <br/><br/>
+              <Table
+                columns={[
+                  {title: '物料行号', dataIndex: 'line_no', key: 'line_no', render: (value) => (value || '-')},
+                  {title: '结算金额', dataIndex: 'settle_amount', key: 'settle_amount', render: (value) => (value || '-')},
+                  {title: '操作', dataIndex: 'action', key: 'action', render: (value, row) => (
+                      <Button disable={this.store.billLocked} onClick={() => this.store.handleOpenSettleDialog(row)}>
+                        修改
+                      </Button>
+                    )},
+                ]}
+                size='small'
+                style={{marginRight: 20}}
+                dataSource={this.store.settle_list}
+              />
             </div>
-            <Dialog
+            <Modal
               title='编辑结算明细行'
               titleStyle={{fontSize: 18}}
-              modal={false}
-              autoScrollBodyContent
-              open={this.store.openSettleItemDialog}
-              onRequestClose={this.store.handleCloseSettleDialog}>
-              <form onSubmit={this.store.confirmSettleItem}>
-                <TextField floatingLabelText="行号" value={this.store.editingSettleItem.line_no} disabled style={{marginRight: 20}}/>
-                <TextField floatingLabelText="结算金额"
-                           value={this.store.editingSettleItem.settle_amount || ''}
-                           style={{marginRight: 20}}
-                           type="number"
-                           onChange={e => this.store.setSettleItem('settle_amount', e.target.value)}/>
-                <div style={{textAlign: 'right'}}>
-                  <RaisedButton style={{ marginTop: 20 }} label='确认'
-                                primary={this.store.editingValidated}
-                                disabled={!this.store.editingValidated}
-                                onClick={this.store.confirmSettleItem} />
-                  <RaisedButton style={{ marginTop: 20, marginLeft: 20 }} label="取消"
-                                primary={false} onClick={this.store.handleCloseSettleDialog} />
-                </div>
-              </form>
-            </Dialog>
+              visible={this.store.openSettleItemDialog}
+              okText='确认'
+              cancelText='取消'
+              onOk={this.store.confirmSettleItem}
+              onCancel={this.store.handleCloseSettleDialog}>
+              <div>
+                <Form.Item label='行号' style={{marginBottom: 10, width: 300}}>
+                  <Input disabled value={this.store.editingSettleItem.line_no || "未设置"}/>
+                </Form.Item>
+                <Form.Item label='结算金额' style={{marginBottom: 10, width: 300}}>
+                  <Input
+                    type="number"
+                    value={this.store.editingSettleItem.settle_amount || "未设置"}
+                    onChange={e => this.store.setSettleItem('settle_amount', e.target.value)}
+                  />
+                </Form.Item>
+              </div>
+            </Modal>
           </div>
         )}
       </Drawer>

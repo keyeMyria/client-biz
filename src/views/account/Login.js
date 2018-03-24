@@ -7,7 +7,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import CircularProgress from 'material-ui/CircularProgress';
 import {accountService} from "../../services/account";
 import Storage from '../../utils/storage';
-import Toast, {ToastStore} from "../../components/Toast";
+import {ToastStore} from "../../components/Toast";
 
 @inject('user')
 @observer
@@ -127,7 +127,6 @@ export default class Login extends React.Component {
            </div>
          </from>
        </div>
-        <Toast />
       </div>
     );
   }

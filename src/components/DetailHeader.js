@@ -252,6 +252,7 @@ export class DetailHeader extends React.Component {
 
   TitleItem = observer(() => {
     const {detail, isMail, confirm_status} = this.store;
+    const iconBtnStyle = {backgroundColor: 'transparent', border: 'none', fontSize: 20};
     // const {head} = detail;
     if (isMail) {
       return (
@@ -277,22 +278,15 @@ export class DetailHeader extends React.Component {
         <div className="detail-title order">
           <p className="detail-label">{this.billTitle}: {detail.head.bill_no}</p>
           <div>
-            <Tooltip title={'保存单据'}>
-              <Button type="primary"
-                      disabled={!this.store.shouldSaveBill}
-                      shape="circle" icon="download" action={this.onSave} />
+            <Tooltip title='保存单据'>
+              <Button style={iconBtnStyle} disabled={!this.store.shouldSaveBill} icon="save" onClick={this.onSave}/>
             </Tooltip>
-            <div style={{ marginLeft: 20 }}>
+            <div style={{ marginLeft: 10 }}>
               <this.dropDown />
             </div>
-
-            <IconButton
-              iconClassName="material-icons"
-              onClick={this.onClose}
-              iconStyle={DetailHeader.styles.smallIcon}
-              style={{...DetailHeader.styles.small, marginLeft: 20}}>
-              {'close'}
-            </IconButton>
+            <Tooltip title='关闭'>
+              <Button style={iconBtnStyle} icon="close" onClick={this.onClose}/>
+            </Tooltip>
           </div>
         </div>
       );

@@ -1,7 +1,6 @@
 import React from 'react';
 import {observable, computed, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
-import CircularProgress from 'material-ui/CircularProgress';
 import { Spin, Icon, Button } from 'antd';
 import {Comments} from "./Comments"
 import {DetailHeader} from "./DetailHeader";

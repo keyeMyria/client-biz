@@ -1,8 +1,8 @@
 import React from 'react';
 import {observer, inject} from 'mobx-react';
+import {LoadMoreButton} from '../../../components/Buttons';
 import {BoxHeader} from "../../../components/BoxHeader";
 import {MessageItem} from "../../../components/ListItem";
-import FlatButton from 'material-ui/FlatButton';
 import ProcurementActivitiesStore from "../../stores/procurement-activies";
 
 @inject('user')
@@ -58,7 +58,7 @@ export default class ProcurementBox extends React.Component {
             {this.props.user.user.current.is_admin ? '管理员无法获得业务动态' : '暂无内容'}
           </p>}
           <div style={{width: '100%', textAlign: 'right'}}>
-            {this.store.hasMore && <FlatButton label="加载更多" primary onTouchTap={this.store.load}/>}
+            {this.store.hasMore && <LoadMoreButton onTouchTap={this.store.load}/>}
           </div>
         </div>
       </div>

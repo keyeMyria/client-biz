@@ -56,20 +56,20 @@ const routes = [
     component: NDashBoard,
     routes: [
       {
-        path: '/v1/dashboard/main',
+        path: '/v1/dashboard/user.index',
         component: UserIndex,
         exact: true,
       },
       {
-        path: '/dashboard/merchant',
+        path: '/v1/dashboard/merchant',
         component: Merchant,
       },
       {
-        path: '/dashboard/partner',
+        path: '/v1/dashboard/partner',
         component: Partner,
       },
       {
-        path: '/dashboard/materials',
+        path: '/v1/dashboard/materials',
         component: Materials,
       }
     ],
