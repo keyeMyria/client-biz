@@ -37,6 +37,16 @@ export const DialogComponent = observer(() => (
   </Dialog>
 ));
 
+// export const DialogComponent = observer(() => <Modal
+//   title={BizDialog.title}
+//   visible={BizDialog.open}
+//   closable={true}
+//   maskClosable={true}
+//   footer={null}
+// >
+//   {BizDialog.content}
+// </Modal>)
+
 export const ConfirmDialog = ({submitAction}) => (
   <div>
     <RaisedButton label="确定" primary={true} style={{width: '40%', marginRight: '15%'}}

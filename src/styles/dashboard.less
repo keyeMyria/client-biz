@@ -132,10 +132,9 @@ a {
 }
 
 .work-panel {
-  flex: 1;
   overflow: hidden;
   background-color: #F8F6F2;
-  height: 100%;
+  flex: 1;
 }
 
 .panel-nav {
@@ -204,15 +203,12 @@ a {
   display: flex;
   flex-direction: row;
   box-sizing: border-box;
-  position: relative;
-  box-sizing: border-box;
   padding: 10px 10px 0 10px;
   justify-content: flex-start;
   align-items: flex-start;
   height: 100%;
   min-width: 780px;
   background-color: #F8F6F2;
-  position: relative;
 
   .none-data {
     font-size: 14px;
@@ -238,13 +234,12 @@ a {
 .board-layout {
   width: 300px;
   min-width: 300px;
-  background-color: #eeece8;
   padding: 5px 10px 10px 10px;
   box-sizing: border-box;
   margin-right: 20px;
-  max-height: 90%;
   overflow-y: auto;
-
+  top: 0;
+  bottom: 30px;
   .none-data {
     font-size: 14px;
     color: #797979;
@@ -256,7 +251,7 @@ a {
 
 .message-box {
   box-sizing: border-box;
-  position: relative;
+  flex: 1;
   .header {
     display: flex;
     flex-direction: row;
@@ -354,17 +349,6 @@ a {
   }
 }
 
-.styled-select {
-  height: 20px;
-  overflow: hidden;
-  width: 100px;
-  color: #797979;
-  outline: none;
-  //border: none;
-  font-size: 12px;
-  border: 1px solid #E6E6E6;
-}
-
 .styled-select select {
   background: transparent;
   border: none;
@@ -381,7 +365,6 @@ a {
   width: 100px;
 }
 
-.slate { background-color: #fff; }
 .slate select { color: #000; }
 
 // procurement board
@@ -666,4 +649,13 @@ a {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+}
+
+.drawer-wrapper {
+  width: 600px;
+  overflow: auto;
+}
+
+.rc-drawer {
+  background-color: white;
 }

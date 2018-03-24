@@ -2,6 +2,7 @@ import React from 'react';
 import {observable, computed, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
 import CircularProgress from 'material-ui/CircularProgress';
+import { Spin, Icon, Button } from 'antd';
 import {Comments} from "./Comments"
 import {DetailHeader} from "./DetailHeader";
 import {DrawerStore} from "./Drawer";
@@ -358,9 +359,9 @@ export class Detail extends React.Component {
   }
   render() {
     const {detail} = this.store;
-    if (!detail) return (<div style={{textAlign: 'center'}}><CircularProgress style={{marginTop: '40%'}}/></div>);
+    if (!detail) return (<div className='drawer-wrapper' style={{textAlign: 'center'}}><Spin size="large" style={{marginTop: '40%'}} /></div>);
     return (
-      <div>
+      <div className='drawer-wrapper' style={{backgroundColor: 'white'}}>
         <DetailHeader onClose={this.props.close} detail={detail} isMail={this.store.isMail}/>
         {!this.store.isMail && detail.head.bill_no && <Comments billNo={detail.head.bill_no}/>}
       </div>

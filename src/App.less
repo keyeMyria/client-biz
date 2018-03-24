@@ -1,6 +1,9 @@
 @import "~normalize-css/normalize.css";
+@import "~antd/dist/antd.less";
 @import "iconfont/material-icons.css";
 @import "./styles/index";
+
+@primary-color: '#efafce';
 
 body {
   margin: 0;
@@ -18,4 +21,20 @@ html {
 p {
   margin: 0;
   padding: 0;
+}
+
+.ant-dropdown {
+  z-index: 1301;
+}
+
+.ant-select-dropdown {
+  z-index: 1301
+}
+
+.ant-calendar-picker-container {
+  z-index: 1301
+}
+
+.ant-tooltip {
+  z-index: 1305;
 }

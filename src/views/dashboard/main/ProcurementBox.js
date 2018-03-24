@@ -43,11 +43,13 @@ export default class ProcurementBox extends React.Component {
     }
   };
 
-  onSelect = e => this.setState({messagesFilterValue: parseInt(e.target.value, 10)});
+  onSelect = e => {
+    this.setState({messagesFilterValue: parseInt(e, 10)});
+  }
   render() {
     if (!(this.props.user.user && this.props.user.user.current)) return null;
     return (
-      <div className="board-layout message-box">
+      <div className="board-layout message-box" style={{maxHeight: '85vh'}}>
         <BoxHeader title="采购动态" selections={this.selections} onSelect={this.onSelect}
                    selectionCount={this.selectionCount}/>
         <div className="message-list">

@@ -1,5 +1,6 @@
 import React from 'react';
 import {DrawerStore} from "./Drawer";
+import { Card, Icon } from 'antd';
 
 const PriorityType = {
   'NOT_IMPORTENT': 'NOT_IMPORTENT',
@@ -55,6 +56,26 @@ export class MessageItem extends React.PureComponent {
   render() {
     const {message, isProcurement} = this.props;
     message.isProcurement = isProcurement;
+    return (<Card bordered={false} style={{ width: 300, marginBottom: 5 }} bodyStyle={{padding: 0}}>
+        <div className="message-item">
+          <input type="checkbox" style={{visibility: 'hidden'}}/>
+          <div className="message-detail" onClick={() => DrawerStore.onOpen(message)}
+               style={{display: 'block', marginLeft: 5}}>
+            <p className="message-title">{this.billTitle}</p>
+            <p className="message-content">
+              {message.content ? message.content : `单号：${message.bill_no}`}
+            </p>
+            {message.create_time && <p className="message-content">{message.create_time}</p>}
+            <div className="message-bottom">
+              <div>
+                {message.tags && message.tags.map((tag, index) => <p
+                  key={index} className="tag" style={this.getTagStyle(tag)}>{this.getTagTxt(tag)}</p>)}
+              </div>
+              <p className="source">来自：{this.sourceMerchant}</p>
+            </div>
+          </div>
+        </div>
+    </Card>);
     return (
       <div className="message-item" style={{marginBottom: 5}}>
         <input type="checkbox" style={{visibility: 'hidden'}}/>
